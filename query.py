@@ -3,7 +3,7 @@ import json
 import sys
 
 def answer(ans, path):
-	print path
+	#print path
 	ans.append(path)
 
 def getPaperJson(id, urlAttributes):
