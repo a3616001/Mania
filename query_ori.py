@@ -186,14 +186,14 @@ def query_Id_Id(id1, id2):
 	# return ans
 	return ans
 
-def query_AuId_Id(auId1, id2, json1):
+def query_AuId_Id(auId1, id2, afId1):
 	sys.stderr.write('query_AuId_Id ' + str(auId1) + ' ' + str(id2) + '\n')
 	ans = []
 
 	json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
 
-	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%auId1
-	#json1 = json.loads((urllib.urlopen(url)).read())['entities']
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%auId1
+	json1 = json.loads((urllib.urlopen(url)).read())['entities']
 
 	# =========== 1-hop =========== 
 
@@ -267,10 +267,6 @@ def query_AuId_Id(auId1, id2, json1):
 					answer(ans, [auId1, paper['Id'], RId, id2])
 
 	# AuId-AA.AFId-AA.AuId-Id
-	afId1 = -1
-	for author in json1[0]['AA']:
-		if author['AuId'] == auId1 and author.has_key('AfId'):
-			afId1 = author['AfId']
 	if afId1 != -1 and json2.has_key('AA'):
 		for author in json2['AA']:
 			if author.has_key('AfId') and author['AfId'] == afId1:
@@ -278,14 +274,14 @@ def query_AuId_Id(auId1, id2, json1):
 
 	return ans
 
-def query_Id_AuId(id1, auId2, json2):
+def query_Id_AuId(id1, auId2, afId2):
 	sys.stderr.write('query_AuId_Id ' + str(id1) + ' ' + str(auId2) + '\n')
 	ans = []
 
 	json1 = getPaperJson(id1, 'RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
 
-	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%auId2
-	#json2 = json.loads((urllib.urlopen(url)).read())['entities']
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%auId2
+	json2 = json.loads((urllib.urlopen(url)).read())['entities']
 
 	paperIdList = map(lambda x:x['Id'], json2)
 	paperIdList.sort()
@@ -358,11 +354,7 @@ def query_Id_AuId(id1, auId2, json2):
 					answer(ans, [id1, RId, comRId, auId2])
 
 	# Id-AA.AuId-AA.AfId-AuId
-	afId2 = -1
-	for author in json2[0]['AA']:
-		if author['AuId'] == auId2 and author.has_key('AfId'):
-			afId2 = author['AfId']
-	if afId2 != -1 and json1.has_key('AA'):
+	if json1.has_key('AA'):
 		for author in json1['AA']:
 			if author.has_key('AfId') and author['AfId'] == afId2:
 				answer(ans, [id1, author['AuId'], afId2, auId2])
@@ -370,48 +362,40 @@ def query_Id_AuId(id1, auId2, json2):
 
 	return ans
 
-def query_AuId_AuId(auId1, auId2, json1, json2):
+def query_AuId_AuId(auId1, auId2, afId1, afId2):
 	sys.stderr.write('query_AuId_AuId ' + str(auId1) + ' ' + str(auId2) + '\n')
 	ans = []
 
 	return ans
 
 def query(id1, id2):
-	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
-	json1 = json.loads((urllib.urlopen(url)).read())['entities']
-	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	json2 = json.loads((urllib.urlopen(url)).read())['entities']
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=1&attributes=Id,AA.AuId,AA.AfId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
+	json1 = (json.loads((urllib.urlopen(url)).read()))['entities']
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=1&attributes=Id,AA.AuId,AA.AfId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	json2 = (json.loads((urllib.urlopen(url)).read()))['entities']
 
-	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=1&attributes=Id,AA.AuId,AA.AfId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
-	#json1 = (json.loads((urllib.urlopen(url)).read()))['entities']
-	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=1&attributes=Id,AA.AuId,AA.AfId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	#json2 = (json.loads((urllib.urlopen(url)).read()))['entities']
-
-	if json1 and json2:
-		#afId1 = -1
-		#afId2 = -1
-		#for author in json1[0]['AA']:
-		#	if author['AuId'] == id1 and author.has_key('AfId'):
-		#		afId1 = author['AfId']
-		#for author in json2[0]['AA']:
-		#	if author['AuId'] == id2 and author.has_key('AfId'):
-		#		afId2 = author['AfId']
-		#return query_AuId_AuId(id1, id2, afId1, afId2)
-		return query_AuId_AuId(id1, id2, json1, json1)
-	elif json1:
-		#afId1 = -1
-		#for author in json1[0]['AA']:
-		#	if author['AuId'] == id1 and author.has_key('AfId'):
-		#		afId1 = author['AfId']
-		#return query_AuId_Id(id1, id2, afId1)
-		return query_AuId_Id(id1, id2, json1)
-	elif json2:
-		#afId2 = -1
-		#for author in json2[0]['AA']:
-		#	if author['AuId'] == id2 and author.has_key('AfId'):
-		#		afId2 = author['AfId']
-		#return query_Id_AuId(id1, id2, afId2)
-		return query_Id_AuId(id1, id2, json2)
+	if len(json1) == 1 and len(json2) == 1:
+		afId1 = -1
+		afId2 = -1
+		for author in json1[0]['AA']:
+			if author['AuId'] == id1 and author.has_key('AfId'):
+				afId1 = author['AfId']
+		for author in json2[0]['AA']:
+			if author['AuId'] == id2 and author.has_key('AfId'):
+				afId2 = author['AfId']
+		return query_AuId_AuId(id1, id2, afId1, afId2)
+	elif len(json1) == 1:
+		afId1 = -1
+		for author in json1[0]['AA']:
+			if author['AuId'] == id1 and author.has_key('AfId'):
+				afId1 = author['AfId']
+		return query_AuId_Id(id1, id2, afId1)
+	elif len(json2) == 1:
+		afId2 = -1
+		for author in json2[0]['AA']:
+			if author['AuId'] == id2 and author.has_key('AfId'):
+				afId2 = author['AfId']
+		return query_Id_AuId(id1, id2, afId2)
 	else:
 		return query_Id_Id(id1, id2)
 
