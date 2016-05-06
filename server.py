@@ -10,7 +10,7 @@ app = Flask(__name__)
 def call():
     id1 = request.args.get('id1')
     id2 = request.args.get('id2')
-    print id1, id2
+#    print id1, id2
     # os.system('./program {} {}'.format(id1, id2))
 #    ans = []
 #    with open('test.out', 'r') as f:

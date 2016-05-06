@@ -302,10 +302,11 @@ def query(id1, id2):
 				afId2 = author['AfId']
 		return query_AuId_AuId(id1, id2, afId1, afId2)
 	elif len(json1) == 1:
+		afId1 = -1
 		for author in json1[0]['AA']:
-			if author['AuId'] == id1:
+			if author['AuId'] == id1 and author.has_key('AfId'):
 				afId1 = author['AfId']
-		return query_AuId_Id(id1, id2, afId1)
+		return [] if afId1 == -1 else query_AuId_Id(id1, id2, afId1)
 	elif len(json2) == 1:
 		for author in json2[0]['AA']:
 			if author['AuId'] == id2:
@@ -320,7 +321,8 @@ def main():
 	#query(2126125555, 2153635508)
 	#query(2126125555, 2060367530)
 	#query(2140190241, 2121939561)
-	query(2175015405, 1514498087)
+	#query(2175015405, 1514498087)
+	print query(2251253715,2180737804)
 
 if __name__ == '__main__':
     main()
