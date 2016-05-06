@@ -3,12 +3,12 @@ import json
 import sys
 
 def answer(ans, path):
-	print path
+	#print path
 	ans.append(path)
 
 def getPaperJson(id, urlAttributes):
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Id=%d&count=1000&attributes=%s&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id,urlAttributes)
-	sys.stderr.write(url + '\n')
+	#sys.stderr.write(url + '\n')
 	f = urllib.urlopen(url)
 	result = json.loads(f.read())
 	return result['entities'][0]
