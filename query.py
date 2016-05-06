@@ -46,7 +46,7 @@ def query_Id_Id(id1, id2):
 
 	# Id-Id
 	if json1.has_key('RId') and id2 in json1['RId']:
-		answer((id1, id2))
+		answer([id1, id2])
 
 	# =========== 2-hop =========== 
 
@@ -63,11 +63,11 @@ def query_Id_Id(id1, id2):
 
 	# Id-J.JId-Id
 	if json1.has_key('J') and json2.has_key('J') and json1['J']['JId'] == json2['J']['JId']:
-		answer((id1, json1['J']['JId'], id2))
+		answer([id1, json1['J']['JId'], id2])
 
 	# Id-C.CId-Id
 	if json1.has_key('C') and json2.has_key('C') and json1['C']['CId'] == json2['C']['CId']:
-		answer((id1, json1['C']['CId'], id2))
+		answer([id1, json1['C']['CId'], id2])
 
 	# Id-AA.AuId-Id
 	if json1.has_key('AA') and json2.has_key('AA'):
@@ -75,7 +75,7 @@ def query_Id_Id(id1, id2):
 		AuIdList2 = map(lambda x:x['AuId'], json2['AA'])
 		jointAuIdList = join(AuIdList1, AuIdList2)
 		for AuId in jointAuIdList:
-			answer((id1, AuId, id2))
+			answer([id1, AuId, id2])
 	elif json1.has_key('AA'):
 		AuIdList1 = map(lambda x:x['AuId'], json1['AA'])
 		#AuIdList1.sort()
@@ -87,7 +87,7 @@ def query_Id_Id(id1, id2):
 		Id2citedList = map(lambda x:x['Id'], Id2cited)
 		jointRIdList = join(RIdList, Id2citedList)
 		for RId in jointRIdList:
-			answer((id1, RId, id2))
+			answer([id1, RId, id2])
 
 	# =========== 3-hop =========== 
 
@@ -99,19 +99,19 @@ def query_Id_Id(id1, id2):
 				if paper.has_key('F'):
 					for F_element in paper['F']:
 						if F_element['FId'] in FIdList1:
-							answer((id1, F_element['FId'], paper['Id'], id2))
+							answer([id1, F_element['FId'], paper['Id'], id2])
 
 		# Id-J.JId-Id-Id
 		if json1.has_key('J'):
 			for paper in Id2cited:
 				if paper.has_key('J') and paper['J']['JId'] == json1['J']['JId']:
-					answer((id1, json1['J']['JId'], paper['Id'], id2))
+					answer([id1, json1['J']['JId'], paper['Id'], id2])
 
 		# Id-C.CId-Id-Id
 		if json1.has_key('C'):
 			for paper in Id2cited:
 				if paper.has_key('C') and paper['C']['CId'] == json1['C']['CId']:
-					answer((id1, json1['C']['CId'], paper['Id'], id2))
+					answer([id1, json1['C']['CId'], paper['Id'], id2])
 
 		# Id-AA.AuId-Id-Id
 		if json1.has_key('AA'):
@@ -119,7 +119,7 @@ def query_Id_Id(id1, id2):
 				if paper.has_key('AA'):
 					for AA_element in paper['AA']:
 						if AA_element['AuId'] in AuIdList1:
-							answer((id1, AA_element['AuId'], paper['Id'], id2))
+							answer([id1, AA_element['AuId'], paper['Id'], id2])
 
 	# Id-Id-*-Id
 	if json1.has_key('RId'):
@@ -143,19 +143,19 @@ def query_Id_Id(id1, id2):
 					FIdListTmp = map(lambda x:x['FId'], id1CitePaper['F'])
 					jointFIdList = join(FIdListTmp, FIdList2)
 					for FId in jointFIdList:
-						answer((id1, id1CitePaper['Id'], FId, id2))
+						answer([id1, id1CitePaper['Id'], FId, id2])
 
 		# Id-Id-J.JId-Id
 		if json2.has_key('J'):
 			for id1CitePaper in id1CitePapersInfo:
 				if id1CitePaper.has_key('J') and id1CitePaper['J']['JId'] == json2['J']['JId']:
-					answer((id1, id1CitePaper['Id'], json2['J']['JId'], id2))
+					answer([id1, id1CitePaper['Id'], json2['J']['JId'], id2])
 
 		# Id-Id-C.CId-Id
 		if json2.has_key('C'):
 			for id1CitePaper in id1CitePapersInfo:
 				if id1CitePaper.has_key('C') and id1CitePaper['C']['CId'] == json2['C']['CId']:
-					answer((id1, id1CitePaper['Id'], json2['C']['CId'], id2))
+					answer([id1, id1CitePaper['Id'], json2['C']['CId'], id2])
 
 		# Id-Id-AA.AuId-Id
 		if json2.has_key('AA'):
@@ -164,7 +164,7 @@ def query_Id_Id(id1, id2):
 					AuIdListTmp = map(lambda x:x['AuId'], id1CitePaper['AA'])
 					jointAuIdList = join(AuIdListTmp, AuIdList2)
 					for AuId in jointAuIdList:
-						answer((id1, id1CitePaper['Id'], AuId, id2))
+						answer([id1, id1CitePaper['Id'], AuId, id2])
 
 		# Id-Id-Id-Id
 		#for id1CitePaper in id1CitePapersInfo:
