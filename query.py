@@ -13,11 +13,11 @@ def getPaperJson(id, urlAttributes):
 	result = json.loads(f.read())
 	return result['entities'][0]
 
-def join(l1, l2): # join two list
+def join(l1, l2): # join two sorted list
 	n1 = len(l1)
 	n2 = len(l2)
-	l1.sort()
-	l2.sort()
+	#l1.sort()
+	#l2.sort()
 	p1 = 0
 	p2 = 0
 	ret = []
@@ -52,15 +52,16 @@ def query_Id_Id(id1, id2):
 	# =========== 2-hop =========== 
 
 	# Id-F.FId-Id
-	if json1.has_key('F') and json2.has_key('F'):
+	if json1.has_key('F'):
 		FIdList1 = map(lambda x:x['FId'], json1['F'])
+		FIdList1.sort()
+	if json2.has_key('F'):
 		FIdList2 = map(lambda x:x['FId'], json2['F'])
+		FIdList2.sort()		
+	if json1.has_key('F') and json2.has_key('F'):
 		jointFIdList = join(FIdList1, FIdList2)
 		for FId in jointFIdList:
 			answer(ans, [id1, FId, id2])
-	elif json1.has_key('F'):
-		FIdList1 = map(lambda x:x['FId'], json1['F'])
-		#FIdList1.sort()
 
 	# Id-J.JId-Id
 	if json1.has_key('J') and json2.has_key('J') and json1['J']['JId'] == json2['J']['JId']:
@@ -71,21 +72,24 @@ def query_Id_Id(id1, id2):
 		answer(ans, [id1, json1['C']['CId'], id2])
 
 	# Id-AA.AuId-Id
-	if json1.has_key('AA') and json2.has_key('AA'):
+	if json1.has_key('AA'):
 		AuIdList1 = map(lambda x:x['AuId'], json1['AA'])
+		AuIdList1.sort()
+	if json2.has_key('AA'):
 		AuIdList2 = map(lambda x:x['AuId'], json2['AA'])
+		AuIdList2.sort()
+	if json1.has_key('AA') and json2.has_key('AA'):
 		jointAuIdList = join(AuIdList1, AuIdList2)
 		for AuId in jointAuIdList:
 			answer(ans, [id1, AuId, id2])
-	elif json1.has_key('AA'):
-		AuIdList1 = map(lambda x:x['AuId'], json1['AA'])
-		#AuIdList1.sort()
 
 	# Id-Id-Id
 	# TODO 
 	if json1.has_key('RId'):
 		RIdList = json1['RId']
 		Id2citedList = map(lambda x:x['Id'], Id2cited)
+		RIdList.sort()
+		Id2citedList.sort()
 		jointRIdList = join(RIdList, Id2citedList)
 		for RId in jointRIdList:
 			answer(ans, [id1, RId, id2])
@@ -142,6 +146,7 @@ def query_Id_Id(id1, id2):
 			for id1CitePaper in id1CitePapersInfo:
 				if id1CitePaper.has_key('F'):
 					FIdListTmp = map(lambda x:x['FId'], id1CitePaper['F'])
+					FIdListTmp.sort()
 					jointFIdList = join(FIdListTmp, FIdList2)
 					for FId in jointFIdList:
 						answer(ans, [id1, id1CitePaper['Id'], FId, id2])
@@ -163,12 +168,20 @@ def query_Id_Id(id1, id2):
 			for id1CitePaper in id1CitePapersInfo:
 				if id1CitePaper.has_key('F'):
 					AuIdListTmp = map(lambda x:x['AuId'], id1CitePaper['AA'])
+					AuIdListTmp.sort()
 					jointAuIdList = join(AuIdListTmp, AuIdList2)
 					for AuId in jointAuIdList:
 						answer(ans, [id1, id1CitePaper['Id'], AuId, id2])
 
 		# Id-Id-Id-Id
 		#for id1CitePaper in id1CitePapersInfo:
+		for id1CitePaper in id1CitePapersInfo:
+			if id1CitePaper.has_key('RId'):
+				RIdListTmp = id1CitePaper['RId']
+				RIdListTmp.sort()
+				jointRIdList = join(RIdListTmp, Id2citedList)
+				for RId in jointRIdList:
+					answer(ans, [id1, id1CitePaper['Id'], RId, id2])
 
 	# return ans
 	return ans
@@ -179,8 +192,9 @@ def query(id1, id2):
 def main():
 	#query(2140190241, 1514498087)
 	#query(2140190241, 1490955312)
-	#query(2126125555, 2153635508)
-	query(2126125555, 2060367530)
+	query(2126125555, 2153635508)
+	#query(2126125555, 2060367530)
+	#query(2140190241, 2121939561)
 
 if __name__ == '__main__':
     main()
