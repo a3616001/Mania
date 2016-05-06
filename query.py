@@ -3,7 +3,7 @@ import json
 import sys
 
 def answer(ans, path):
-	#print path
+	print path
 	ans.append(path)
 
 def getPaperJson(id, urlAttributes):
@@ -175,7 +175,6 @@ def query_Id_Id(id1, id2):
 						answer(ans, [id1, id1CitePaper['Id'], AuId, id2])
 
 		# Id-Id-Id-Id
-		#for id1CitePaper in id1CitePapersInfo:
 		for id1CitePaper in id1CitePapersInfo:
 			if id1CitePaper.has_key('RId'):
 				RIdListTmp = id1CitePaper['RId']
@@ -279,6 +278,88 @@ def query_Id_AuId(id1, auId2, afId2):
 	sys.stderr.write('query_AuId_Id ' + str(id1) + ' ' + str(auId2) + '\n')
 	ans = []
 
+	json1 = getPaperJson(id1, 'RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
+
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%auId2
+	json2 = json.loads((urllib.urlopen(url)).read())['entities']
+
+	paperIdList = map(lambda x:x['Id'], json2)
+	paperIdList.sort()
+
+	# =========== 1-hop ===========
+
+	# Id-AuId
+	if json1.has_key('AA') and (auId2 in map(lambda x:x['AuId'], json1['AA'])):
+		answer(ans, [id1, auId2])
+
+	# =========== 2-hop ===========
+
+	# Id-Id-AuId
+	if json1.has_key('RId'):
+		RIdList = json1['RId']
+		RIdList.sort()
+		jointRIdList = join(paperIdList, RIdList)
+		for RId in jointRIdList:
+			answer(ans, [id1, RId, auId2])
+
+	# =========== 3-hop ===========
+
+	# Id-F.FId-Id-AuId
+	if json1.has_key('F'):
+		FIdList1 = map(lambda x:x['FId'], json1['F'])
+		FIdList1.sort()
+		for paper in json2:
+			if paper.has_key('F'):
+				FIdListTmp = map(lambda x:x['FId'], paper['F'])
+				FIdListTmp.sort()
+				jointFIdList = join(FIdListTmp, FIdList1)
+				for FId in jointFIdList:
+					answer(ans, [id1, FId, paper['Id'], auId2])
+
+	# Id-C.CId-Id-AuId
+	if json1.has_key('C'):
+		CId1 = json1['C']['CId']
+		for paper in json2:
+			if paper.has_key('C') and paper['C']['CId'] == CId1:
+				answer(ans, [id1, CId1, paper['Id'], auId2])
+
+	# Id-J.JId-Id-AuId
+	if json1.has_key('J'):
+		JId1 = json1['J']['JId']
+		for paper in json2:
+			if paper.has_key('J') and paper['J']['JId'] == JId1:
+				answer(ans, [id1, JId1, paper['Id'], auId2])
+
+	# Id-AA.AuId-Id-AuId
+	if json1.has_key('AA'):
+		AuIdList1 = map(lambda x:x['AuId'], json1['AA'])
+		AuIdList1.sort()
+		for paper in json2:
+			if paper.has_key('AA'):
+				AuIdListTmp = map(lambda x:x['AuId'], paper['AA'])
+				AuIdListTmp.sort()
+				jointAuIdList = join(AuIdListTmp, AuIdList1)
+				for AuId in jointAuIdList:
+					answer(ans, [id1, AuId, paper['Id'], auId2])
+
+	# Id-Id-Id-AuId
+	if json1.has_key('RId'):
+		for RId in RIdList:
+			citePaperInfo = getPaperJson(RId, 'RId')
+			if citePaperInfo.has_key('RId'):
+				RIdListTmp = citePaperInfo['RId']
+				RIdListTmp.sort()
+				jointRIdList = join(RIdListTmp, paperIdList)
+				for comRId in jointRIdList:
+					answer(ans, [id1, RId, comRId, auId2])
+
+	# Id-AA.AuId-AA.AfId-AuId
+	if json1.has_key('AA'):
+		for author in json1['AA']:
+			if author.has_key('AfId') and author['AfId'] == afId2:
+				answer(ans, [id1, author['AuId'], afId2, auId2])
+
+
 	return ans
 
 def query_AuId_AuId(auId1, auId2, afId1, afId2):
@@ -326,7 +407,7 @@ def main():
 	#query(2140190241, 2121939561)
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
-	print query(621499171, 2100837269)
+	print len(query(2100837269, 621499171))
 
 if __name__ == '__main__':
     main()
