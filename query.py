@@ -268,9 +268,9 @@ def query_AuId_Id(auId1, id2, afId1):
 					answer(ans, [auId1, paper['Id'], RId, id2])
 
 	# AuId-AA.AFId-AA.AuId-Id
-	if json2.has_key('AA'):
+	if afId1 != -1 and json2.has_key('AA'):
 		for author in json2['AA']:
-			if author['AfId'] == afId1:
+			if author.has_key('AfId') and author['AfId'] == afId1:
 				answer(ans, [auId1, afId1, author['AuId'], id2])
 
 	return ans
@@ -294,11 +294,13 @@ def query(id1, id2):
 	json2 = (json.loads((urllib.urlopen(url)).read()))['entities']
 
 	if len(json1) == 1 and len(json2) == 1:
+		afId1 = -1
+		afId2 = -1
 		for author in json1[0]['AA']:
-			if author['AuId'] == id1:
+			if author['AuId'] == id1 and author.has_key('AfId'):
 				afId1 = author['AfId']
 		for author in json2[0]['AA']:
-			if author['AuId'] == id2:
+			if author['AuId'] == id2 and author.has_key('AfId'):
 				afId2 = author['AfId']
 		return query_AuId_AuId(id1, id2, afId1, afId2)
 	elif len(json1) == 1:
@@ -306,10 +308,11 @@ def query(id1, id2):
 		for author in json1[0]['AA']:
 			if author['AuId'] == id1 and author.has_key('AfId'):
 				afId1 = author['AfId']
-		return [] if afId1 == -1 else query_AuId_Id(id1, id2, afId1)
+		return query_AuId_Id(id1, id2, afId1)
 	elif len(json2) == 1:
+		afId2 = -1
 		for author in json2[0]['AA']:
-			if author['AuId'] == id2:
+			if author['AuId'] == id2 and author.has_key('AfId'):
 				afId2 = author['AfId']
 		return query_Id_AuId(id1, id2, afId2)
 	else:
@@ -322,7 +325,8 @@ def main():
 	#query(2126125555, 2060367530)
 	#query(2140190241, 2121939561)
 	#query(2175015405, 1514498087)
-	print query(2251253715,2180737804)
+	#print query(2251253715,2180737804)
+	print query(621499171, 2100837269)
 
 if __name__ == '__main__':
     main()
