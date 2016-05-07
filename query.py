@@ -2,6 +2,7 @@ import urllib
 import json
 import sys
 import time
+from multiprocessing.dummy import Pool
 
 def answer(ans, path):
 	#print path
@@ -141,9 +142,12 @@ def query_Id_Id(id1, id2):
 			urlAttributes += ',C.CId'
 		if json2.has_key('AA'):
 			urlAttributes += ',AA.AuId'
-
-		id1CitePapersInfo = map(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
-
+		now = time.time()	
+		pool = Pool(8)	
+		id1CitePapersInfo = pool.map(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
+		pool.close()
+		pool.join()
+		print 'time use: ', time.time() - now
 		# Id-Id-F.FId-Id
 		if json2.has_key('F'):
 			for id1CitePaper in id1CitePapersInfo:
@@ -286,9 +290,11 @@ def query_Id_AuId(id1, auId2, json2):
 	#sys.stderr.write('query_AuId_Id ' + str(id1) + ' ' + str(auId2) + '\n')
 	print 'query_Id_AuId', id1, auId2
 	ans = []
-
+	
+	now = time.time()
 	json1 = getPaperJson(id1, 'RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
-
+	print 'time use: ', time.time() - now	
+	now = time.time()
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%auId2
 	#json2 = json.loads((urllib.urlopen(url)).read())['entities']
 
@@ -371,7 +377,7 @@ def query_Id_AuId(id1, auId2, json2):
 		for author in json1['AA']:
 			if author.has_key('AfId') and author['AfId'] == afId2:
 				answer(ans, [id1, author['AuId'], afId2, auId2])
-
+	print 'time use2: ', time.time() - now
 	return ans
 
 def query_AuId_AuId(auId1, auId2, json1, json2):
@@ -428,7 +434,8 @@ def main():
 	#query(2140190241, 2121939561)
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
-	print len(query(2100837269, 621499171))
+	#print len(query(2100837269, 621499171))
+	print len(query(2147152072, 189831743))
 
 if __name__ == '__main__':
     main()
