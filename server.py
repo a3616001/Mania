@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import json
 import os
-from query_multiprocessing_numpy import *
+from query import *
 import time
 app = Flask(__name__)
 

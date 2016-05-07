@@ -1,5 +1,5 @@
 import urllib
-import json
+import ujson as json
 import sys
 import time
 from multiprocessing.dummy import Pool
@@ -146,9 +146,10 @@ def query_Id_Id(id1, id2, json1, json2):
 			urlAttributes += ',AA.AuId'
 		now = time.time()	
 		pool = Pool(20)	
-		id1CitePapersInfo = pool.map(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
+		id1CitePapersInfoResult = pool.map_async(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
 		pool.close()
 		pool.join()
+		id1CitePapersInfo = id1CitePapersInfoResult.get()
 		print 'time use: ', time.time() - now
 		# Id-Id-F.FId-Id
 		if json2.has_key('F'):
@@ -362,9 +363,10 @@ def query_Id_AuId(id1, auId2, json1, json2):
 
 	# Id-Id-Id-AuId
 	pool = Pool(20)
-	citePaperInfos = pool.map(lambda x:getPaperJson(x, 'RId'), RIdList)
+	citePaperInfoResults = pool.map_async(lambda x:getPaperJson(x, 'RId'), RIdList)
 	pool.close()
 	pool.join()
+	citePaperInfos = citePaperInfoResults.get()
 	if json1.has_key('RId'):
 		for citePaperInfo in citePaperInfos:
 			if citePaperInfo.has_key('RId'):
