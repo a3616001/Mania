@@ -1,4 +1,4 @@
-import urllib
+import urllib2 as urllib
 import ujson as json
 import sys
 import time
@@ -45,10 +45,11 @@ def query_Id_Id(id1, id2, json1, json2):
 	#json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId')
 	#print json1['RId']
 	#print json2
-
-	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	
+	now = time.time()
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,CC>10)&count=66666&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	Id2cited = json.loads(urllib.urlopen(url).read())['entities']
-
+	print 'time use2: ', time.time() - now
 	# =========== 1-hop =========== 
 
 	# Id-Id
@@ -123,7 +124,7 @@ def query_Id_Id(id1, id2, json1, json2):
 			for paper in Id2cited:
 				if paper.has_key('C') and paper['C']['CId'] == json1['C']['CId']:
 					answer(ans, [id1, json1['C']['CId'], paper['Id'], id2])
-
+		
 		# Id-AA.AuId-Id-Id
 		if json1.has_key('AA'):
 			for paper in Id2cited:
@@ -150,7 +151,7 @@ def query_Id_Id(id1, id2, json1, json2):
 		pool.close()
 		pool.join()
 		id1CitePapersInfo = id1CitePapersInfoResult.get()
-		print 'time use: ', time.time() - now
+		print 'time use3: ', time.time() - now
 		# Id-Id-F.FId-Id
 		if json2.has_key('F'):
 			for id1CitePaper in id1CitePapersInfo:
@@ -184,6 +185,7 @@ def query_Id_Id(id1, id2, json1, json2):
 						answer(ans, [id1, id1CitePaper['Id'], AuId, id2])
 
 		# Id-Id-Id-Id
+		tmp = len(ans)
 		for id1CitePaper in id1CitePapersInfo:
 			if id1CitePaper.has_key('RId'):
 				RIdListTmp = id1CitePaper['RId']
@@ -191,7 +193,7 @@ def query_Id_Id(id1, id2, json1, json2):
 				jointRIdList = join(RIdListTmp, Id2citedList)
 				for RId in jointRIdList:
 					answer(ans, [id1, id1CitePaper['Id'], RId, id2])
-
+		print 'len(Id-Id-Id-Id) =', len(ans)-tmp
 	# return ans
 	return ans
 
