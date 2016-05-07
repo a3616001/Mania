@@ -1,5 +1,6 @@
 import urllib2 as urllib
 import ujson as json
+#import json
 import sys
 import time
 from multiprocessing.dummy import Pool
@@ -47,8 +48,8 @@ def query_Id_Id(id1, id2, json1, json2):
 	#print json2
 	
 	now = time.time()
-	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,CC>10)&count=66666&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,CC>0)&count=50000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	Id2cited = json.loads(urllib.urlopen(url).read())['entities']
 	print 'time use2: ', time.time() - now
 	# =========== 1-hop =========== 
@@ -106,33 +107,61 @@ def query_Id_Id(id1, id2, json1, json2):
 
 	# Id-*-Id-Id
 	if len(Id2cited) != 0:
+
+		now = time.time()
+		poolResult = []
+		pool = Pool(20)
+		if json1.has_key('F'):
+			for FId in FIdList1:
+				url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,Composite(F.FId=%d))&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id2, FId)
+				poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url, )))
+		if json1.has_key('J'):
+			url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,Composite(J.JId=%d))&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id2, json1['J']['JId'])
+			poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url, )))
+		if json1.has_key('C'):
+			url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,Composite(C.CId=%d))&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id2, json1['C']['CId'])
+			poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url, )))
+		if json1.has_key('AA'):
+			for AuId in AuIdList1:
+				url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,Composite(AA.AuId=%d))&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id2, AuId)
+				poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url, )))
+		pool.close()
+		pool.join()
+		print 'time use3: ', time.time() - now
+
+		idx = 0
+
 		# Id-F.FId-Id-Id
 		if json1.has_key('F'):
-			for paper in Id2cited:
-				if paper.has_key('F'):
-					for F_element in paper['F']:
-						if F_element['FId'] in FIdList1:
-							answer(ans, [id1, F_element['FId'], paper['Id'], id2])
+			for FId in FIdList1:
+				comPaperList = poolResult[idx].get()
+				idx += 1
+				for comPaper in comPaperList:
+					answer(ans, [id1, FId, comPaper['Id'], id2])
 
 		# Id-J.JId-Id-Id
 		if json1.has_key('J'):
-			for paper in Id2cited:
-				if paper.has_key('J') and paper['J']['JId'] == json1['J']['JId']:
-					answer(ans, [id1, json1['J']['JId'], paper['Id'], id2])
+			JId = json1['J']['JId']
+			comPaperList = poolResult[idx].get()
+			idx += 1
+			for comPaper in comPaperList:
+				answer(ans, [id1, JId, comPaper['Id'], id2])
 
 		# Id-C.CId-Id-Id
 		if json1.has_key('C'):
-			for paper in Id2cited:
-				if paper.has_key('C') and paper['C']['CId'] == json1['C']['CId']:
-					answer(ans, [id1, json1['C']['CId'], paper['Id'], id2])
+			CId = json1['C']['CId']
+			comPaperList = poolResult[idx].get()
+			idx += 1
+			for comPaper in comPaperList:
+				answer(ans, [id1, CId, comPaper['Id'], id2])
 		
 		# Id-AA.AuId-Id-Id
 		if json1.has_key('AA'):
-			for paper in Id2cited:
-				if paper.has_key('AA'):
-					for AA_element in paper['AA']:
-						if AA_element['AuId'] in AuIdList1:
-							answer(ans, [id1, AA_element['AuId'], paper['Id'], id2])
+			for AuId in AuIdList1:
+				comPaperList = poolResult[idx].get()
+				idx += 1
+				for comPaper in comPaperList:
+					answer(ans, [id1, AuId, comPaper['Id'], id2])
 
 	# Id-Id-*-Id
 	if json1.has_key('RId'):
@@ -152,7 +181,7 @@ def query_Id_Id(id1, id2, json1, json2):
 		pool.close()
 		pool.join()
 		id1CitePapersInfo = id1CitePapersInfoResult.get()
-		print 'time use3: ', time.time() - now
+		print 'time use4: ', time.time() - now
 		# Id-Id-F.FId-Id
 		if json2.has_key('F'):
 			for id1CitePaper in id1CitePapersInfo:
@@ -366,12 +395,12 @@ def query_Id_AuId(id1, auId2, json1, json2):
 					answer(ans, [id1, AuId, paper['Id'], auId2])
 
 	# Id-Id-Id-AuId
-	pool = Pool(20)
-	citePaperInfoResults = pool.map_async(lambda x:getPaperJson(x, 'RId'), RIdList)
-	pool.close()
-	pool.join()
-	citePaperInfos = citePaperInfoResults.get()
 	if json1.has_key('RId'):
+		pool = Pool(20)
+		citePaperInfoResults = pool.map_async(lambda x:getPaperJson(x, 'RId'), RIdList)
+		pool.close()
+		pool.join()
+		citePaperInfos = citePaperInfoResults.get()
 		for citePaperInfo in citePaperInfos:
 			if citePaperInfo.has_key('RId'):
 				RIdListTmp = citePaperInfo['RId']
@@ -492,7 +521,7 @@ def main():
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
-	print len(query(2140190241,2121939561))
+	print len(query(2126125555,2060367530))
 
 if __name__ == '__main__':
     main()
