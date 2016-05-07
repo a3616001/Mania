@@ -104,17 +104,6 @@ def query_Id_Id(id1, id2, json1, json2):
 
 	# =========== 3-hop =========== 
 
-	# Id-Id-Id-Id
-	tmp = len(ans)
-	for id1CitePaper in id1CitePapersInfo:
-		if id1CitePaper.has_key('RId'):
-			RIdListTmp = id1CitePaper['RId']
-			RIdListTmp.sort()
-			jointRIdList = join(RIdListTmp, Id2citedList)
-			for RId in jointRIdList:
-				answer(ans, [id1, id1CitePaper['Id'], RId, id2])
-	print 'len(Id-Id-Id-Id) =', len(ans)-tmp
-
 	# Id-*-Id-Id
 	if len(Id2cited) != 0:
 		# Id-F.FId-Id-Id
@@ -195,6 +184,17 @@ def query_Id_Id(id1, id2, json1, json2):
 					jointAuIdList = join(AuIdListTmp, AuIdList2)
 					for AuId in jointAuIdList:
 						answer(ans, [id1, id1CitePaper['Id'], AuId, id2])
+
+		# Id-Id-Id-Id
+		tmp = len(ans)
+		for id1CitePaper in id1CitePapersInfo:
+			if id1CitePaper.has_key('RId'):
+				RIdListTmp = id1CitePaper['RId']
+				RIdListTmp.sort()
+				jointRIdList = join(RIdListTmp, Id2citedList)
+				for RId in jointRIdList:
+					answer(ans, [id1, id1CitePaper['Id'], RId, id2])
+		print 'len(Id-Id-Id-Id) =', len(ans)-tmp
 
 	# return ans
 	return ans
