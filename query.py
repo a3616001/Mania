@@ -385,7 +385,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 		for author in json1['AA']:
 			if author.has_key('AfId') and author['AfId'] == afId2:
 				answer(ans, [id1, author['AuId'], afId2, auId2])
-	print 'time use2: ', time.time() - now
+	#print 'time use2: ', time.time() - now
 	return ans
 
 def query_AuId_AuId(auId1, auId2, json1, json2):
@@ -458,7 +458,7 @@ def main():
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
-	print len(query(2147152072, 189831743))
+	print len(query(2140190241,2121939561))
 
 if __name__ == '__main__':
     main()
