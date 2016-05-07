@@ -1,6 +1,7 @@
 import urllib
 import json
 import sys
+import time
 
 def answer(ans, path):
 	#print path
@@ -191,9 +192,9 @@ def query_AuId_Id(auId1, id2, json1):
 	#sys.stderr.write('query_AuId_Id ' + str(auId1) + ' ' + str(id2) + '\n')
 	print query_AuId_Id, auId1, id2
 	ans = []
-
+	#now = time.time()
 	json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
-
+	#print 'time use2: ', time.time() - now
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%auId1
 	#json1 = json.loads((urllib.urlopen(url)).read())['entities']
 
@@ -254,9 +255,10 @@ def query_AuId_Id(auId1, id2, json1):
 					answer(ans, [auId1, paper['Id'], AuId, id2])
 
 	# AuId-Id-Id-Id
-	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	#now = time.time()
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=100000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	Id2cited = json.loads(urllib.urlopen(url).read())['entities']
-
+	#print 'time use3:', time.time() - now
 	if len(Id2cited) > 0:
 		Id2citedList = map(lambda x:x['Id'], Id2cited)
 		Id2citedList.sort()
@@ -370,7 +372,6 @@ def query_Id_AuId(id1, auId2, json2):
 			if author.has_key('AfId') and author['AfId'] == afId2:
 				answer(ans, [id1, author['AuId'], afId2, auId2])
 
-
 	return ans
 
 def query_AuId_AuId(auId1, auId2, json1, json2):
@@ -380,11 +381,12 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 	return ans
 
 def query(id1, id2):
+	#now = time.time()
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
 	json1 = json.loads((urllib.urlopen(url)).read())['entities']
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	json2 = json.loads((urllib.urlopen(url)).read())['entities']
-
+	#print 'time use: ', time.time() - now
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=1&attributes=Id,AA.AuId,AA.AfId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
 	#json1 = (json.loads((urllib.urlopen(url)).read()))['entities']
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=1&attributes=Id,AA.AuId,AA.AfId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
