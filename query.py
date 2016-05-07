@@ -143,7 +143,7 @@ def query_Id_Id(id1, id2):
 		if json2.has_key('AA'):
 			urlAttributes += ',AA.AuId'
 		now = time.time()	
-		pool = Pool(8)	
+		pool = Pool(20)	
 		id1CitePapersInfo = pool.map(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
 		pool.close()
 		pool.join()
@@ -194,7 +194,7 @@ def query_Id_Id(id1, id2):
 
 def query_AuId_Id(auId1, id2, json1):
 	#sys.stderr.write('query_AuId_Id ' + str(auId1) + ' ' + str(id2) + '\n')
-	print query_AuId_Id, auId1, id2
+	print 'query_AuId_Id', auId1, id2
 	ans = []
 	#now = time.time()
 	json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
@@ -358,9 +358,12 @@ def query_Id_AuId(id1, auId2, json2):
 					answer(ans, [id1, AuId, paper['Id'], auId2])
 
 	# Id-Id-Id-AuId
+	pool = Pool(20)
+	citePaperInfos = pool.map(lambda x:getPaperJson(x, 'RId'), RIdList)
+	pool.close()
+	pool.join()
 	if json1.has_key('RId'):
-		for RId in RIdList:
-			citePaperInfo = getPaperJson(RId, 'RId')
+		for citePaperInfo in citePaperInfos:
 			if citePaperInfo.has_key('RId'):
 				RIdListTmp = citePaperInfo['RId']
 				RIdListTmp.sort()
