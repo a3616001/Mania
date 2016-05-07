@@ -394,6 +394,36 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 	sys.stderr.write('query_AuId_AuId ' + str(auId1) + ' ' + str(auId2) + '\n')
 	ans = []
 
+	# =========== 2-hop ===========
+
+	# AuId-*-AuId
+	for paper1 in json1:
+		for paper2 in json2:
+			# AuId-AFId-AuId
+			if paper1.has_key('AfId') and paper2.has_key('AfId'):
+				if paper1['AfId']==paper2['AfId']:
+					answer(ans, [auId1, paper1['AfId'], auId2])
+			# AuId-Id-AuId
+			if paper1.has_key('Id') and paper2.has_key('Id'):
+				if paper1['Id']==paper2['Id']:
+					answer(ans, [auId1, paper1['Id'], auId2])
+
+	# =========== 3-hop ===========
+
+	# AuId-Id-Id-AuId
+	IdList2 = []
+	for paper2 in json2:
+		if paper2.has_key('Id'):
+			IdList2.append(paper2['Id'])
+	for paper1 in json1:
+		if paper1.has_key('Id'):
+			if paper1.has_key('RId') and paper1['RId'] in IdList2:
+				answer(ans, [auId1, paper1['Id'], paper1['RId'], auId2])
+			for paper2 in json2:
+				if paper2.has_key('Id') and paper1['Id']==paper2['Id']:
+					if paper2.has_key('RId') and paper2['RId'] in IdList2:
+						answer(ans, [auId1, paper2['Id'], paper2['RId'],auId2])
+
 	return ans
 
 def query(id1, id2):
@@ -460,7 +490,7 @@ def main():
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
-	print len(query(2140190241,2121939561))
+	print len(query(2251253715, 621499174))
 
 if __name__ == '__main__':
     main()
