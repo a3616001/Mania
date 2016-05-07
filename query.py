@@ -33,7 +33,8 @@ def join(l1, l2): # join two sorted list
 	return ret
 
 def query_Id_Id(id1, id2):
-	sys.stderr.write('query_Id_Id ' + str(id1) + ' ' + str(id2) + '\n')
+	#sys.stderr.write('query_Id_Id ' + str(id1) + ' ' + str(id2) + '\n')
+	print 'query_Id_Id', id1, id2
 	ans = []
 
 	json1 = getPaperJson(id1, 'RId,F.FId,J.JId,C.CId,AA.AuId')
@@ -187,7 +188,8 @@ def query_Id_Id(id1, id2):
 	return ans
 
 def query_AuId_Id(auId1, id2, json1):
-	sys.stderr.write('query_AuId_Id ' + str(auId1) + ' ' + str(id2) + '\n')
+	#sys.stderr.write('query_AuId_Id ' + str(auId1) + ' ' + str(id2) + '\n')
+	print query_AuId_Id, auId1, id2
 	ans = []
 
 	json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
@@ -279,7 +281,8 @@ def query_AuId_Id(auId1, id2, json1):
 	return ans
 
 def query_Id_AuId(id1, auId2, json2):
-	sys.stderr.write('query_AuId_Id ' + str(id1) + ' ' + str(auId2) + '\n')
+	#sys.stderr.write('query_AuId_Id ' + str(id1) + ' ' + str(auId2) + '\n')
+	print 'query_Id_AuId', id1, auId2
 	ans = []
 
 	json1 = getPaperJson(id1, 'RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId')

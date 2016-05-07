@@ -17,6 +17,8 @@ def call():
 #        for line in f:
 #            ans.append([_ for _ in map(int, line.split())])
     now = time.time()
+#    import profile
+#    profile.run('query(int({}), int({}))'.format(id1, id2))
     ans = query(int(id1), int(id2))
     print 'Answer Number = ', len(ans)
     print "time: {}".format(time.time() - now)
