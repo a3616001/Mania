@@ -1,0 +1,62 @@
+http://mania.chinacloudapp.cn/maniarest?id1=2126125555&id2=2153635508
+query_Id_Id 2126125555 2153635508
+Answer Number =  2593
+time: 3.04370498657
+time: 2.66520309448
+time: 2.5312371254
+
+http://mania.chinacloudapp.cn/maniarest?id1=2140190241&id2=1514498087
+query_Id_Id 2140190241 1514498087
+Answer Number =  145
+time: 5.04496407509
+time: 2.16946196556
+time: 2.04440498352
+
+http://mania.chinacloudapp.cn/maniarest?id1=2140190241&id2=1490955312
+query_Id_Id 2140190241 1490955312
+Answer Number =  89
+time: 1.94962000847
+time: 2.06508302689
+time: 1.86841893196
+
+http://mania.chinacloudapp.cn/maniarest?id1=2126125555&id2=2060367530
+query_Id_Id 2126125555 2060367530
+Answer Number =  5616
+time: 3.39615297318
+time: 3.47683095932
+time: 3.3614590168
+
+http://mania.chinacloudapp.cn/maniarest?id1=2140190241&id2=2121939561
+query_Id_AuId 2140190241 2121939561
+Answer Number =  911
+time: 2.56285905838
+time: 2.15319013596
+time: 1.96192979813
+
+http://mania.chinacloudapp.cn/maniarest?id1=2175015405&id2=1514498087
+query_AuId_Id 2175015405 1514498087
+Answer Number =  128
+time: 0.643435955048
+time: 0.552043914795
+time: 0.610011816025
+
+http://mania.chinacloudapp.cn/maniarest?id1=2094437628&id2=2273736245
+query_Id_AuId 2094437628 2273736245
+Answer Number =  39  (Someone in Weixin gourp said it is 45)
+time: 1.12871193886
+time: 0.823126077652
+time: 1.02882409096
+
+http://mania.chinacloudapp.cn/maniarest?id1=621499171&id2=2100837269
+query_AuId_Id 621499171 2100837269
+Answer Number =  37
+time: 5.64721083641
+time: 5.57983398438
+time: 5.81660890579
+
+http://mania.chinacloudapp.cn/maniarest?id1=2292217923&id2=2100837269
+
+http://mania.chinacloudapp.cn/maniarest?id1=2158048826&id2=2100837269
+
+
+1514498087 2020999234
