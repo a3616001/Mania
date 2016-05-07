@@ -34,13 +34,15 @@ def join(l1, l2): # join two sorted list
 			p2 += 1
 	return ret
 
-def query_Id_Id(id1, id2):
+def query_Id_Id(id1, id2, json1, json2):
 	#sys.stderr.write('query_Id_Id ' + str(id1) + ' ' + str(id2) + '\n')
 	print 'query_Id_Id', id1, id2
 	ans = []
 
-	json1 = getPaperJson(id1, 'RId,F.FId,J.JId,C.CId,AA.AuId')
-	json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId')
+	#print json1
+
+	#json1 = getPaperJson(id1, 'RId,F.FId,J.JId,C.CId,AA.AuId')
+	#json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId')
 	#print json1['RId']
 	#print json2
 
@@ -192,12 +194,13 @@ def query_Id_Id(id1, id2):
 	# return ans
 	return ans
 
-def query_AuId_Id(auId1, id2, json1):
+def query_AuId_Id(auId1, id2, json1, json2):
 	#sys.stderr.write('query_AuId_Id ' + str(auId1) + ' ' + str(id2) + '\n')
 	print 'query_AuId_Id', auId1, id2
 	ans = []
+
 	#now = time.time()
-	json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
+	#json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
 	#print 'time use2: ', time.time() - now
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%auId1
 	#json1 = json.loads((urllib.urlopen(url)).read())['entities']
@@ -286,15 +289,15 @@ def query_AuId_Id(auId1, id2, json1):
 
 	return ans
 
-def query_Id_AuId(id1, auId2, json2):
+def query_Id_AuId(id1, auId2, json1, json2):
 	#sys.stderr.write('query_AuId_Id ' + str(id1) + ' ' + str(auId2) + '\n')
 	print 'query_Id_AuId', id1, auId2
 	ans = []
 	
-	now = time.time()
-	json1 = getPaperJson(id1, 'RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
-	print 'time use: ', time.time() - now	
-	now = time.time()
+	#now = time.time()
+	#json1 = getPaperJson(id1, 'RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
+	#print 'time use: ', time.time() - now	
+	#now = time.time()
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%auId2
 	#json2 = json.loads((urllib.urlopen(url)).read())['entities']
 
@@ -391,15 +394,30 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 
 def query(id1, id2):
 	#now = time.time()
-	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
-	json1 = json.loads((urllib.urlopen(url)).read())['entities']
-	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	json2 = json.loads((urllib.urlopen(url)).read())['entities']
+	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
+	#json1 = json.loads((urllib.urlopen(url)).read())['entities']
+	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	#json2 = json.loads((urllib.urlopen(url)).read())['entities']
 	#print 'time use: ', time.time() - now
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=1&attributes=Id,AA.AuId,AA.AfId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
 	#json1 = (json.loads((urllib.urlopen(url)).read()))['entities']
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=1&attributes=Id,AA.AuId,AA.AfId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	#json2 = (json.loads((urllib.urlopen(url)).read()))['entities']
+
+	url1 = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
+	url2 = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	poolResult = []
+	pool = Pool(20)
+	poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url1,)))
+	poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url2,)))
+	poolResult.append(pool.apply_async(getPaperJson, (id1, 'RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId')))
+	poolResult.append(pool.apply_async(getPaperJson, (id2, 'F.FId,J.JId,C.CId,AA.AuId,AA.AfId')))
+	pool.close()
+	pool.join()
+	json1 = poolResult[0].get()
+	json2 = poolResult[1].get()
+	paperJson1 = poolResult[2].get()
+	paperJson2 = poolResult[3].get()
 
 	if json1 and json2:
 		#afId1 = -1
@@ -418,16 +436,16 @@ def query(id1, id2):
 		#	if author['AuId'] == id1 and author.has_key('AfId'):
 		#		afId1 = author['AfId']
 		#return query_AuId_Id(id1, id2, afId1)
-		return query_AuId_Id(id1, id2, json1)
+		return query_AuId_Id(id1, id2, json1, paperJson2)
 	elif json2:
 		#afId2 = -1
 		#for author in json2[0]['AA']:
 		#	if author['AuId'] == id2 and author.has_key('AfId'):
 		#		afId2 = author['AfId']
 		#return query_Id_AuId(id1, id2, afId2)
-		return query_Id_AuId(id1, id2, json2)
+		return query_Id_AuId(id1, id2, paperJson1, json2)
 	else:
-		return query_Id_Id(id1, id2)
+		return query_Id_Id(id1, id2, paperJson1, paperJson2)
 
 def main():
 	#query(2140190241, 1514498087)
