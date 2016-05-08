@@ -587,38 +587,56 @@ def query_Id_AuId(id1, auId2, json1, json2):
 	return ans
 
 def query_AuId_AuId(auId1, auId2, json1, json2):
-	sys.stderr.write('query_AuId_AuId ' + str(auId1) + ' ' + str(auId2) + '\n')
-	ans = []
-
 	# =========== 2-hop ===========
 
-	# AuId-*-AuId
+	AFIdList1 = []
+	IdList1 = []
+	RIdList1 = []
 	for paper1 in json1:
-		for paper2 in json2:
-			# AuId-AFId-AuId
-			if paper1.has_key('AfId') and paper2.has_key('AfId'):
-				if paper1['AfId']==paper2['AfId']:
-					answer(ans, [auId1, paper1['AfId'], auId2])
-			# AuId-Id-AuId
-			if paper1.has_key('Id') and paper2.has_key('Id'):
-				if paper1['Id']==paper2['Id']:
-					answer(ans, [auId1, paper1['Id'], auId2])
+		if paper1.has_key('AfId'):
+			AFIdList1.append(paper1['AfId'])
+		if paper1.has_key('Id'):
+			IdList1.append(paper1['Id'])
+		if paper1.has_key('RId'):
+			RIdList1.append(paper1['RId'])
+	AFIdList2 = []
+	IdList2 = []
+	RIdList2 = []
+	for paper2 in json2:
+		if paper2.has_key('AfId'):
+			AFIdList2.append(paper1['AfId'])
+		if paper2.has_key('Id'):
+			IdList2.append(paper2['Id'])
+		if paper2.has_key('RId'):
+			RIdList2.append(paper2['Id'])
+	#AuId-AFId-AuId
+	if len(AFIdList1)>0 and len(AFIdList2)>0:
+		AFIdList1.sort()
+		AFIdList2.sort()
+		jointAFIdList = join(AFIdList1, AFIdList2)
+		for AFId in jointAFIdList:
+			answer(ans, [auId1, AFId, auId2])
+	#AuId-Id-AuId
+	if len(IdList1)>0 and len(IdList2)>0:
+		IdList1.sort()
+		IdList2.sort()
+		jointIdList = join(IdList1, IdList2)
+		for id in jointIdList:
+			answer(ans, [auId1, id, auId2])
 
 	# =========== 3-hop ===========
 
 	# AuId-Id-Id-AuId
-	IdList2 = []
-	for paper2 in json2:
-		if paper2.has_key('Id'):
-			IdList2.append(paper2['Id'])
 	for paper1 in json1:
 		if paper1.has_key('Id'):
-			if paper1.has_key('RId') and paper1['RId'] in IdList2:
-				answer(ans, [auId1, paper1['Id'], paper1['RId'], auId2])
-			for paper2 in json2:
-				if paper2.has_key('Id') and paper1['Id']==paper2['Id']:
-					if paper2.has_key('RId') and paper2['RId'] in IdList2:
-						answer(ans, [auId1, paper2['Id'], paper2['RId'],auId2])
+			if paper1['Id'] in IdList1:
+				for paper in json1:
+					if paper.has_key('Id') and paper.has_key('RId') and paper1['Id']==paper['Id'] and paper['RId'] in IdList2:
+						answer(ans, [auId1, paper['Id'], paper['RId'], auId2])
+			if paper1['Id'] in IdList2:
+				for paper in json2:
+					if paper.has_key('Id') and paper.has_key('RId') and paper1['Id']==paper['Id'] and paper['RId'] in IdList2:
+						answer(ans, [auId1, paper['Id'], paper['RId'], auId2])
 
 	return ans
 
