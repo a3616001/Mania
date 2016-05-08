@@ -478,15 +478,17 @@ def query_AuId_Id(auId1, id2, json1, json2):
 					answer(ans, [auId1, paper['Id'], RId, id2])
 
 	# AuId-AA.AFId-AA.AuId-Id
-	afId1 = -1
-	for author in json1[0]['AA']:
-		if author['AuId'] == auId1 and author.has_key('AfId'):
-			afId1 = author['AfId']
-	if afId1 != -1 and json2.has_key('AA'):
+	AFIdSet1 = set()
+	for paper in json1:
+		if paper.has_key('AA'):
+			for author in paper['AA']:
+				if author['AuId'] == auId1 and author.has_key('AfId'):
+					AFIdSet1.add(author['AfId'])
+	if json2.has_key('AA'):
 		for author in json2['AA']:
-			if author.has_key('AfId') and author['AfId'] == afId1:
-				answer(ans, [auId1, afId1, author['AuId'], id2])
-
+			if author.has_key('AfId'):
+				if author['AfId'] in AFIdSet1:
+					answer(ans, [auId1, author['AfId'], author['AuId'], id2])
 	return ans
 
 def query_Id_AuId(id1, auId2, json1, json2):
@@ -576,14 +578,18 @@ def query_Id_AuId(id1, auId2, json1, json2):
 					answer(ans, [id1, RId, comRId, auId2])
 
 	# Id-AA.AuId-AA.AfId-AuId
-	afId2 = -1
-	for author in json2[0]['AA']:
-		if author['AuId'] == auId2 and author.has_key('AfId'):
-			afId2 = author['AfId']
-	if afId2 != -1 and json1.has_key('AA'):
+	AFIdSet2 = set()
+	for paper in json2:
+		if paper.has_key('AA'):
+			for author in paper['AA']:
+				if author['AuId'] == auId2 and author.has_key('AfId'):
+					AFIdSet2.add(author['AfId'])
+	if json1.has_key('AA'):
 		for author in json1['AA']:
-			if author.has_key('AfId') and author['AfId'] == afId2:
-				answer(ans, [id1, author['AuId'], afId2, auId2])
+			if author.has_key('AfId'):
+				if author['AfId'] in AFIdSet2:
+					answer(ans, [id1, author['AuId'], author['AfId'], auId2])
+
 	#print 'time use2: ', time.time() - now
 	return ans
 
@@ -715,7 +721,7 @@ def main():
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
-	print json.dumps(query(2175015405,2121939561))
+	print len(query(2094437628,2273736245))
 
 if __name__ == '__main__':
     main()
