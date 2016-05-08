@@ -622,9 +622,9 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 			answer(ans, [auId1, AFId, auId2])
 	print len(ans)
 	#AuId-Id-AuId
+	IdList1.sort()
+	IdList2.sort()
 	if len(IdList1)>0 and len(IdList2)>0:
-		IdList1.sort()
-		IdList2.sort()
 		jointIdList = join(IdList1, IdList2)
 		for id in jointIdList:
 			answer(ans, [auId1, id, auId2])
@@ -634,10 +634,15 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 	# AuId-Id-Id-AuId
 	for paper1 in json1:
 		if paper1.has_key('RId'):
-			paper1['RId'] = dict(zip(paper1['RId'], range(len(paper1['RId']))))
-			for paper2 in json2:
-				if paper2['Id'] in paper1['RId']:
-					answer(ans, [auId1, paper1['Id'], paper2['Id'], auId2])
+			RIdList = paper1['RId']
+			RIdList.sort()
+			jointList = join(RIdList, IdList2)
+			for i in jointList:
+				answer(ans, [auId1, paper1['Id'], i, auId2])
+			# paper1['RId'] = dict(zip(paper1['RId'], range(len(paper1['RId']))))
+			# for paper2 in json2:
+			# 	if paper2['Id'] in paper1['RId']:
+			# 		answer(ans, [auId1, paper1['Id'], paper2['Id'], auId2])
 	print len(ans)
 	return ans
 
