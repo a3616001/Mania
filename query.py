@@ -592,19 +592,24 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 	ans = []
 
 	# =========== 2-hop ===========
-	# print len(json1), len(json2)
+	print len(json1), len(json2)
+	# print json2
 	AFIdList1 = []
 	IdList1 = []
 	for paper1 in json1:
-		if paper1.has_key('AfId'):
-			AFIdList1.append(paper1['AfId'])
+		if paper1.has_key('AA'):
+			for i in paper1['AA']:
+				if i.has_key('AfId'):
+					AFIdList1.append(i['AfId'])
 		if paper1.has_key('Id'):
 			IdList1.append(paper1['Id'])
 	AFIdList2 = []
 	IdList2 = []
 	for paper2 in json2:
-		if paper2.has_key('AfId'):
-			AFIdList2.append(paper2['AfId'])
+		if paper2.has_key('AA'):
+			for i in paper2['AA']:
+				if i.has_key('AfId'):
+					AFIdList2.append(i['AfId'])
 		if paper2.has_key('Id'):
 			IdList2.append(paper2['Id'])
 	#AuId-AFId-AuId
@@ -662,7 +667,8 @@ def query(id1, id2):
 	json2 = poolResult[1].get()
 	paperJson1 = poolResult[2].get()
 	paperJson2 = poolResult[3].get()
-
+	# print len(json2)
+	
 	if json1 and json2:
 		#afId1 = -1
 		#afId2 = -1
@@ -673,7 +679,7 @@ def query(id1, id2):
 		#	if author['AuId'] == id2 and author.has_key('AfId'):
 		#		afId2 = author['AfId']
 		#return query_AuId_AuId(id1, id2, afId1, afId2)
-		return query_AuId_AuId(id1, id2, json1, json1)
+		return query_AuId_AuId(id1, id2, json1, json2)
 	elif json1:
 		#afId1 = -1
 		#for author in json1[0]['AA']:
@@ -703,7 +709,7 @@ def main():
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
-	print len(query(2175015405,2121939561))
+	print json.dumps(query(2175015405,2121939561))
 
 if __name__ == '__main__':
     main()
