@@ -72,3 +72,8 @@ http://mania.chinacloudapp.cn/maniarest?id1=1514498087&id2=2020999234
 query_Id_Id_small 1514498087 2020999234
 Answer Number =  1929
 time: 2.98606991768
+
+http://mania.chinacloudapp.cn/maniarest?id1=2175015405&id2=2121939561
+query_AuId_AuId 2175015405 2121939561
+Answer Number =  83
+time: 0.890857934952                                                                                                  
