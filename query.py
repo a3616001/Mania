@@ -599,7 +599,7 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 	for paper1 in json1:
 		if paper1.has_key('AA'):
 			for i in paper1['AA']:
-				if i.has_key('AfId'):
+				if i.has_key('AfId') and i['AuId'] == auId1:
 					AFIdList1.append(i['AfId'])
 		if paper1.has_key('Id'):
 			IdList1.append(paper1['Id'])
@@ -608,7 +608,7 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 	for paper2 in json2:
 		if paper2.has_key('AA'):
 			for i in paper2['AA']:
-				if i.has_key('AfId'):
+				if i.has_key('AfId') and i['AuId'] == auId2:
 					AFIdList2.append(i['AfId'])
 		if paper2.has_key('Id'):
 			IdList2.append(paper2['Id'])
