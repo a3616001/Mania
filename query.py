@@ -1,5 +1,6 @@
 import urllib2 as urllib
 import ujson as json
+import numpy as np
 #import json
 import sys
 import time
@@ -608,11 +609,13 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 			IdList2.append(paper2['Id'])
 	#AuId-AFId-AuId
 	if len(AFIdList1)>0 and len(AFIdList2)>0:
-		AFIdList1.sort()
-		AFIdList2.sort()
-		jointAFIdList = join(AFIdList1, AFIdList2)
+		# AFIdList1.sort()
+		# AFIdList2.sort()
+		# jointAFIdList = join(AFIdList1, AFIdList2)
+		jointAFIdList = np.intersect1d(AFIdList1, AFIdList2)
 		for AFId in jointAFIdList:
 			answer(ans, [auId1, AFId, auId2])
+	print len(ans)
 	#AuId-Id-AuId
 	if len(IdList1)>0 and len(IdList2)>0:
 		IdList1.sort()
@@ -620,7 +623,7 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 		jointIdList = join(IdList1, IdList2)
 		for id in jointIdList:
 			answer(ans, [auId1, id, auId2])
-
+	print len(ans)
 	# =========== 3-hop ===========
 
 	# AuId-Id-Id-AuId
@@ -630,7 +633,7 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 			for paper2 in json2:
 				if paper2['Id'] in paper1['RId']:
 					answer(ans, [auId1, paper1['Id'], paper2['Id'], auId2])
-
+	print len(ans)
 	return ans
 
 def query(id1, id2):
@@ -700,7 +703,7 @@ def main():
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
-	print len(query(2126125555,2060367530))
+	print len(query(2175015405,2121939561))
 
 if __name__ == '__main__':
     main()
