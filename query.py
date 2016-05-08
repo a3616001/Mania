@@ -127,7 +127,7 @@ def query_Id_Id_big(id1, id2, json1, json2):
 				url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,Composite(AA.AuId=%d))&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id2, AuId)
 				poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url, )))
 		pool.close()
-		pool.join()
+		#pool.join()
 		print 'time use3: ', time.time() - now
 
 		idx = 0
@@ -180,7 +180,7 @@ def query_Id_Id_big(id1, id2, json1, json2):
 		pool = Pool(20)	
 		id1CitePapersInfoResult = pool.map_async(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
 		pool.close()
-		pool.join()
+		#pool.join()
 		id1CitePapersInfo = id1CitePapersInfoResult.get()
 		print 'time use4: ', time.time() - now
 		# Id-Id-F.FId-Id
@@ -345,7 +345,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 		pool = Pool(20)	
 		id1CitePapersInfoResult = pool.map_async(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
 		pool.close()
-		pool.join()
+		#pool.join()
 		id1CitePapersInfo = id1CitePapersInfoResult.get()
 		print 'time use3: ', time.time() - now
 		# Id-Id-F.FId-Id
@@ -567,7 +567,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 		pool = Pool(20)
 		citePaperInfoResults = pool.map_async(lambda x:getPaperJson(x, 'RId'), RIdList)
 		pool.close()
-		pool.join()
+		#pool.join()
 		citePaperInfos = citePaperInfoResults.get()
 		for citePaperInfo in citePaperInfos:
 			if citePaperInfo.has_key('RId'):
@@ -674,7 +674,7 @@ def query(id1, id2):
 	poolResult.append(pool.apply_async(getPaperJson, (id1, 'RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId')))
 	poolResult.append(pool.apply_async(getPaperJson, (id2, 'F.FId,J.JId,C.CId,AA.AuId,AA.AfId,CC')))
 	pool.close()
-	pool.join()
+	#pool.join()
 	json1 = poolResult[0].get()
 	json2 = poolResult[1].get()
 	paperJson1 = poolResult[2].get()
