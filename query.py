@@ -587,28 +587,25 @@ def query_Id_AuId(id1, auId2, json1, json2):
 	return ans
 
 def query_AuId_AuId(auId1, auId2, json1, json2):
-	# =========== 2-hop ===========
+	sys.stderr.write('query_AuId_AuId ' + str(auId1) + ' ' + str(auId2) + '\n')
+	ans = []
 
+	# =========== 2-hop ===========
+	# print len(json1), len(json2)
 	AFIdList1 = []
 	IdList1 = []
-	RIdList1 = []
 	for paper1 in json1:
 		if paper1.has_key('AfId'):
 			AFIdList1.append(paper1['AfId'])
 		if paper1.has_key('Id'):
 			IdList1.append(paper1['Id'])
-		if paper1.has_key('RId'):
-			RIdList1.append(paper1['RId'])
 	AFIdList2 = []
 	IdList2 = []
-	RIdList2 = []
 	for paper2 in json2:
 		if paper2.has_key('AfId'):
-			AFIdList2.append(paper1['AfId'])
+			AFIdList2.append(paper2['AfId'])
 		if paper2.has_key('Id'):
 			IdList2.append(paper2['Id'])
-		if paper2.has_key('RId'):
-			RIdList2.append(paper2['Id'])
 	#AuId-AFId-AuId
 	if len(AFIdList1)>0 and len(AFIdList2)>0:
 		AFIdList1.sort()
@@ -628,15 +625,11 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 
 	# AuId-Id-Id-AuId
 	for paper1 in json1:
-		if paper1.has_key('Id'):
-			if paper1['Id'] in IdList1:
-				for paper in json1:
-					if paper.has_key('Id') and paper.has_key('RId') and paper1['Id']==paper['Id'] and paper['RId'] in IdList2:
-						answer(ans, [auId1, paper['Id'], paper['RId'], auId2])
-			if paper1['Id'] in IdList2:
-				for paper in json2:
-					if paper.has_key('Id') and paper.has_key('RId') and paper1['Id']==paper['Id'] and paper['RId'] in IdList2:
-						answer(ans, [auId1, paper['Id'], paper['RId'], auId2])
+		if paper1.has_key('RId'):
+			paper1['RId'] = dict(zip(paper1['RId'], range(len(paper1['RId']))))
+			for paper2 in json2:
+				if paper2['Id'] in paper1['RId']:
+					answer(ans, [auId1, paper1['Id'], paper2['Id'], auId2])
 
 	return ans
 
