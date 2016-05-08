@@ -401,6 +401,21 @@ def query_AuId_Id(auId1, id2, json1, json2):
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%auId1
 	#json1 = json.loads((urllib.urlopen(url)).read())['entities']
 
+	# Prepare for AuId-AA.AFId-AA.AuId-Id
+	AFIdSet1 = set()
+	for paper in json1:
+		if paper.has_key('AA'):
+			for author in paper['AA']:
+				if author['AuId'] == auId1 and author.has_key('AfId'):
+					AFIdSet1.add(author['AfId'])
+	if len(AFIdSet1) > 0:
+		authorPaperListResult = []
+		pool = Pool(20)
+		if json2.has_key('AA'):
+			for author in json2['AA']:
+				url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=3000&attributes=AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%author['AuId']
+				authorPaperListResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url,)))
+
 	# =========== 1-hop =========== 
 
 	# AuId-Id
@@ -474,17 +489,33 @@ def query_AuId_Id(auId1, id2, json1, json2):
 					answer(ans, [auId1, paper['Id'], RId, id2])
 
 	# AuId-AA.AFId-AA.AuId-Id
-	AFIdSet1 = set()
-	for paper in json1:
-		if paper.has_key('AA'):
-			for author in paper['AA']:
-				if author['AuId'] == auId1 and author.has_key('AfId'):
-					AFIdSet1.add(author['AfId'])
-	if json2.has_key('AA'):
-		for author in json2['AA']:
-			if author.has_key('AfId'):
-				if author['AfId'] in AFIdSet1:
-					answer(ans, [auId1, author['AfId'], author['AuId'], id2])
+	if len(AFIdSet1) > 0:
+		uniqueSet = set()
+		idx = 0
+		if json2.has_key('AA'):
+			for author in json2['AA']:
+				auId2 = author['AuId']
+				authorPaperList = authorPaperListResult[idx].get()
+				idx += 1
+				for paper in authorPaperList:
+					if paper.has_key('AA'):
+						for author2 in paper['AA']:
+							if author2['AuId'] == auId2 and author2.has_key('AfId') and (author2['AfId'] in AFIdSet1) and not((author2['AfId'], auId2) in uniqueSet):
+								answer(ans, [auId1, author2['AfId'], auId2, id2])
+								uniqueSet.add((author2['AfId'], auId2))
+
+	#AFIdSet1 = set()
+	#for paper in json1:
+	#	if paper.has_key('AA'):
+	#		for author in paper['AA']:
+	#			if author['AuId'] == auId1 and author.has_key('AfId'):
+	#				AFIdSet1.add(author['AfId'])
+	#if json2.has_key('AA'):
+	#	for author in json2['AA']:
+	#		if author.has_key('AfId'):
+	#			if author['AfId'] in AFIdSet1:
+	#				answer(ans, [auId1, author['AfId'], author['AuId'], id2])
+	
 	return ans
 
 def query_Id_AuId(id1, auId2, json1, json2):
@@ -498,6 +529,22 @@ def query_Id_AuId(id1, auId2, json1, json2):
 	#now = time.time()
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%auId2
 	#json2 = json.loads((urllib.urlopen(url)).read())['entities']
+
+	# Prepare for Id-AA.AuId-AA.AfId-AuId
+	AFIdSet2 = set()
+	for paper in json2:
+		if paper.has_key('AA'):
+			for author in paper['AA']:
+				if author['AuId'] == auId2 and author.has_key('AfId'):
+					AFIdSet2.add(author['AfId'])
+	if len(AFIdSet2) > 0:
+		authorPaperListResult = []
+		pool = Pool(20)
+		if json1.has_key('AA'):
+			for author in json1['AA']:
+				url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=3000&attributes=AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%author['AuId']
+				authorPaperListResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url,)))
+
 
 	paperIdList = map(lambda x:x['Id'], json2)
 	paperIdList.sort()
@@ -574,17 +621,32 @@ def query_Id_AuId(id1, auId2, json1, json2):
 					answer(ans, [id1, RId, comRId, auId2])
 
 	# Id-AA.AuId-AA.AfId-AuId
-	AFIdSet2 = set()
-	for paper in json2:
-		if paper.has_key('AA'):
-			for author in paper['AA']:
-				if author['AuId'] == auId2 and author.has_key('AfId'):
-					AFIdSet2.add(author['AfId'])
-	if json1.has_key('AA'):
-		for author in json1['AA']:
-			if author.has_key('AfId'):
-				if author['AfId'] in AFIdSet2:
-					answer(ans, [id1, author['AuId'], author['AfId'], auId2])
+	if len(AFIdSet2) > 0:
+		uniqueSet = set()
+		idx = 0
+		if json1.has_key('AA'):
+			for author in json1['AA']:
+				auId1 = author['AuId']
+				authorPaperList = authorPaperListResult[idx].get()
+				idx += 1
+				for paper in authorPaperList:
+					if paper.has_key('AA'):
+						for author2 in paper['AA']:
+							if author2['AuId'] == auId1 and author2.has_key('AfId') and (author2['AfId'] in AFIdSet2) and not((auId1, author2['AfId']) in uniqueSet):
+								answer(ans, [id1, auId1, author2['AfId'], auId2])
+								uniqueSet.add((auId1, author2['AfId']))
+
+	#AFIdSet2 = set()
+	#for paper in json2:
+	#	if paper.has_key('AA'):
+	#		for author in paper['AA']:
+	#			if author['AuId'] == auId2 and author.has_key('AfId'):
+	#				AFIdSet2.add(author['AfId'])
+	#if json1.has_key('AA'):
+	#	for author in json1['AA']:
+	#		if author.has_key('AfId'):
+	#			if author['AfId'] in AFIdSet2:
+	#				answer(ans, [id1, author['AuId'], author['AfId'], auId2])
 
 	#print 'time use2: ', time.time() - now
 	return ans
@@ -617,6 +679,7 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 		if paper2.has_key('Id'):
 			IdList2.append(paper2['Id'])
 	IdList2.sort()
+
 	#AuId-AFId-AuId
 	if len(AFIdList1)>0 and len(AFIdList2)>0:
 		# AFIdList1.sort()
@@ -717,7 +780,7 @@ def main():
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
-	print len(query(2140190241,1514498087))
+	print len(query(1995672491,1982462162))
 
 if __name__ == '__main__':
     main()
