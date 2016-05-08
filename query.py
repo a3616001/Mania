@@ -242,10 +242,22 @@ def query_Id_Id_small(id1, id2, json1, json2):
 	#print json2
 	
 	now = time.time()
+	pool = Pool(20)
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,CC>10)&count=66666&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	Id2cited = json.loads(urllib.urlopen(url).read())['entities']
+	Id2citedResult = pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url,))
+	if json1.has_key('RId'):
+		urlAttributes = 'Id,RId'
+		if json2.has_key('F'):
+			urlAttributes += ',F.FId'
+		if json2.has_key('J'):
+			urlAttributes += ',J.JId'
+		if json2.has_key('C'):
+			urlAttributes += ',C.CId'
+		if json2.has_key('AA'):
+			urlAttributes += ',AA.AuId'
+		id1CitePapersInfoResult = pool.map_async(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
 	print 'time use2: ', time.time() - now
+
 	# =========== 1-hop =========== 
 
 	# Id-Id
@@ -287,7 +299,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 			answer(ans, [id1, AuId, id2])
 
 	# Id-Id-Id
-	# TODO 
+	Id2cited = Id2citedResult.get()
 	if json1.has_key('RId'):
 		RIdList = json1['RId']
 		Id2citedList = map(lambda x:x['Id'], Id2cited)
@@ -331,23 +343,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 
 	# Id-Id-*-Id
 	if json1.has_key('RId'):
-
-		urlAttributes = 'Id,RId'
-		if json2.has_key('F'):
-			urlAttributes += ',F.FId'
-		if json2.has_key('J'):
-			urlAttributes += ',J.JId'
-		if json2.has_key('C'):
-			urlAttributes += ',C.CId'
-		if json2.has_key('AA'):
-			urlAttributes += ',AA.AuId'
-		now = time.time()	
-		pool = Pool(20)	
-		id1CitePapersInfoResult = pool.map_async(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
-		pool.close()
-		#pool.join()
 		id1CitePapersInfo = id1CitePapersInfoResult.get()
-		print 'time use3: ', time.time() - now
 		# Id-Id-F.FId-Id
 		if json2.has_key('F'):
 			for id1CitePaper in id1CitePapersInfo:
@@ -721,7 +717,7 @@ def main():
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
-	print len(query(2094437628,2273736245))
+	print len(query(2140190241,1514498087))
 
 if __name__ == '__main__':
     main()
