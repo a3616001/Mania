@@ -47,11 +47,13 @@ def query_Id_Id_big(id1, id2, json1, json2):
 	#json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId')
 	#print json1['RId']
 	#print json2
+
+	pool = Pool(20)
 	
 	now = time.time()
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,CC>0)&count=50000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	Id2cited = json.loads(urllib.urlopen(url).read())['entities']
+	Id2citedResult = pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url, ))
 	print 'time use2: ', time.time() - now
 	# =========== 1-hop =========== 
 
@@ -95,6 +97,7 @@ def query_Id_Id_big(id1, id2, json1, json2):
 
 	# Id-Id-Id
 	# TODO 
+	Id2cited = Id2citedResult.get()
 	if json1.has_key('RId'):
 		RIdList = json1['RId']
 		Id2citedList = map(lambda x:x['Id'], Id2cited)
@@ -111,7 +114,6 @@ def query_Id_Id_big(id1, id2, json1, json2):
 
 		now = time.time()
 		poolResult = []
-		pool = Pool(20)
 		if json1.has_key('F'):
 			for FId in FIdList1:
 				url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,Composite(F.FId=%d))&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id2, FId)
@@ -408,9 +410,11 @@ def query_AuId_Id(auId1, id2, json1, json2):
 			for author in paper['AA']:
 				if author['AuId'] == auId1 and author.has_key('AfId'):
 					AFIdSet1.add(author['AfId'])
+	pool = Pool(20)
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	Id2citedResult = pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url,))
 	if len(AFIdSet1) > 0:
 		authorPaperListResult = []
-		pool = Pool(20)
 		if json2.has_key('AA'):
 			for author in json2['AA']:
 				url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=3000&attributes=AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%author['AuId']
@@ -474,8 +478,7 @@ def query_AuId_Id(auId1, id2, json1, json2):
 
 	# AuId-Id-Id-Id
 	now = time.time()
-	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	Id2cited = json.loads(urllib.urlopen(url).read())['entities']
+	Id2cited = Id2citedResult.get()
 	print 'time use3:', time.time() - now
 	if len(Id2cited) > 0:
 		Id2citedList = map(lambda x:x['Id'], Id2cited)
