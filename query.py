@@ -473,10 +473,10 @@ def query_AuId_Id(auId1, id2, json1, json2):
 					answer(ans, [auId1, paper['Id'], AuId, id2])
 
 	# AuId-Id-Id-Id
-	#now = time.time()
-	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=100000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	now = time.time()
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	Id2cited = json.loads(urllib.urlopen(url).read())['entities']
-	#print 'time use3:', time.time() - now
+	print 'time use3:', time.time() - now
 	if len(Id2cited) > 0:
 		Id2citedList = map(lambda x:x['Id'], Id2cited)
 		Id2citedList.sort()
@@ -681,7 +681,7 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 	IdList2.sort()
 
 	#AuId-AFId-AuId
-	if len(AFIdList1)>0 and len(AFIdList2)>0:
+	if len(AFIdSet1)>0 and len(AFIdSet2)>0:
 		# AFIdList1.sort()
 		# AFIdList2.sort()
 		# jointAFIdList = join(AFIdList1, AFIdList2)
@@ -783,7 +783,7 @@ def main():
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
 	now = time.time()
-	print len(query(2117400858, 2242415953))
+	print len(query(2044675247,1982462162))
 	print time.time() - now
 
 if __name__ == '__main__':
