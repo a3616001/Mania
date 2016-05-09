@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import json
 import os
-from query import *
+from query_map import *
 import time
 app = Flask(__name__)
 
