@@ -658,24 +658,24 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 	# =========== 2-hop ===========
 	print len(json1), len(json2)
 	# print json2
-	AFIdList1 = []
+	AFIdSet1 = set()
 	IdList1 = []
 	for paper1 in json1:
 		if paper1.has_key('AA'):
 			for i in paper1['AA']:
 				if i.has_key('AfId') and i['AuId'] == auId1:
-					AFIdList1.append(i['AfId'])
+					AFIdSet1.add(i['AfId'])
 		if paper1.has_key('Id'):
 			IdList1.append(paper1['Id'])
 	IdList1.sort()
 
-	AFIdList2 = []
+	AFIdSet2 = set()
 	IdList2 = []
 	for paper2 in json2:
 		if paper2.has_key('AA'):
 			for i in paper2['AA']:
 				if i.has_key('AfId') and i['AuId'] == auId2:
-					AFIdList2.append(i['AfId'])
+					AFIdSet2.add(i['AfId'])
 		if paper2.has_key('Id'):
 			IdList2.append(paper2['Id'])
 	IdList2.sort()
@@ -685,8 +685,10 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 		# AFIdList1.sort()
 		# AFIdList2.sort()
 		# jointAFIdList = join(AFIdList1, AFIdList2)
-		jointAFIdList = np.intersect1d(AFIdList1, AFIdList2)
-		for AFId in jointAFIdList:
+		# jointAFIdList = np.intersect1d(AFIdList1, AFIdList2)
+		jointAFIdSet = AFIdSet1.intersection(AFIdSet2)
+		# for AFId in jointAFIdList:
+		for AFId in jointAFIdSet:
 			answer(ans, [auId1, AFId, auId2])
 	print len(ans)
 	#AuId-Id-AuId
@@ -780,7 +782,9 @@ def main():
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
-	print len(query(1995672491,1982462162))
+	now = time.time()
+	print len(query(2117400858, 2242415953))
+	print time.time() - now
 
 if __name__ == '__main__':
     main()
