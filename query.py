@@ -787,10 +787,12 @@ def query(id1, id2):
 		#return query_Id_AuId(id1, id2, afId2)
 		return query_Id_AuId(id1, id2, paperJson1[0], json2)
 	else:
+		paperJson1 = paperJson1[0]
+		paperJson2 = paperJson2[0]
 		if paperJson2.has_key('CC') and paperJson2['CC'] >= 50000:
 			return query_Id_Id_big(id1, id2, paperJson1, paperJson2)
 		else:
-			return query_Id_Id_small(id1, id2, paperJson1[0], paperJson2[0])			
+			return query_Id_Id_small(id1, id2, paperJson1, paperJson2)			
 
 def main():
 	#query(2140190241, 1514498087)
@@ -802,7 +804,7 @@ def main():
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
 	now = time.time()
-	print len(query(2140190241, 2121939561))
+	print len(query(2292217923, 2100837269))
 	#print len(query(2140619391,2044675247))
 	print time.time() - now
 
