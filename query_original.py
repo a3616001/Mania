@@ -780,7 +780,7 @@ def main():
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
-	print len(query(1995672491,1982462162))
+	print len(query(2140190241,2121939561))
 
 if __name__ == '__main__':
     main()

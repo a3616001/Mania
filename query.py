@@ -725,20 +725,40 @@ def query(id1, id2):
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=1&attributes=Id,AA.AuId,AA.AfId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	#json2 = (json.loads((urllib.urlopen(url)).read()))['entities']
 
-	url1 = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
-	url2 = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	poolResult = []
-	pool = Pool(20)
-	poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url1,)))
-	poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url2,)))
-	poolResult.append(pool.apply_async(getPaperJson, (id1, 'RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId')))
-	poolResult.append(pool.apply_async(getPaperJson, (id2, 'F.FId,J.JId,C.CId,AA.AuId,AA.AfId,CC')))
-	pool.close()
+	json1 = []
+	json2 = []
+	paperJson1 = []
+	paperJson2 = []
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Or(Or(Or(Composite(AA.AuId=%d),Composite(AA.AuId=%d)),Id=%d),Id=%d)&count=40000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId,CC&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id1,id2,id1,id2)
+	#print type(url)
+	mix = json.loads(urllib.urlopen(url).read())['entities']
+	#print mix
+	for ele in mix:
+		if ele.has_key('AA'):
+			AuIdList = map(lambda x:x['AuId'], ele['AA'])
+			if id1 in AuIdList:
+				json1.append(ele)
+			if id2 in AuIdList:
+				json2.append(ele)
+		if ele['Id'] == id1:
+			paperJson1.append(ele)
+		if ele['Id'] == id2:
+			paperJson2.append(ele)
+
+	#url1 = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
+	#url2 = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	#poolResult = []
+	#pool = Pool(20)
+	#poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url1,)))
+	#poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url2,)))
+	#poolResult.append(pool.apply_async(getPaperJson, (id1, 'RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId')))
+	#poolResult.append(pool.apply_async(getPaperJson, (id2, 'F.FId,J.JId,C.CId,AA.AuId,AA.AfId,CC')))
+	#pool.close()
 	#pool.join()
-	json1 = poolResult[0].get()
-	json2 = poolResult[1].get()
-	paperJson1 = poolResult[2].get()
-	paperJson2 = poolResult[3].get()
+	#json1 = poolResult[0].get()
+	#json2 = poolResult[1].get()
+	#paperJson1 = poolResult[2].get()
+	#paperJson2 = poolResult[3].get()
 	# print len(json2)
 	
 	if json1 and json2:
@@ -758,19 +778,19 @@ def query(id1, id2):
 		#	if author['AuId'] == id1 and author.has_key('AfId'):
 		#		afId1 = author['AfId']
 		#return query_AuId_Id(id1, id2, afId1)
-		return query_AuId_Id(id1, id2, json1, paperJson2)
+		return query_AuId_Id(id1, id2, json1, paperJson2[0])
 	elif json2:
 		#afId2 = -1
 		#for author in json2[0]['AA']:
 		#	if author['AuId'] == id2 and author.has_key('AfId'):
 		#		afId2 = author['AfId']
 		#return query_Id_AuId(id1, id2, afId2)
-		return query_Id_AuId(id1, id2, paperJson1, json2)
+		return query_Id_AuId(id1, id2, paperJson1[0], json2)
 	else:
 		if paperJson2.has_key('CC') and paperJson2['CC'] >= 50000:
 			return query_Id_Id_big(id1, id2, paperJson1, paperJson2)
 		else:
-			return query_Id_Id_small(id1, id2, paperJson1, paperJson2)			
+			return query_Id_Id_small(id1, id2, paperJson1[0], paperJson2[0])			
 
 def main():
 	#query(2140190241, 1514498087)
@@ -782,7 +802,7 @@ def main():
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
 	now = time.time()
-	print len(query(2147152912, 307743305))
+	print len(query(2140190241, 2121939561))
 	#print len(query(2140619391,2044675247))
 	print time.time() - now
 
