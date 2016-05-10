@@ -211,7 +211,7 @@ def query_Id_Id_big(id1, id2, json1, json2):
 		# Id-Id-AA.AuId-Id
 		if json2.has_key('AA'):
 			for id1CitePaper in id1CitePapersInfo:
-				if id1CitePaper.has_key('F'):
+				if id1CitePaper.has_key('AA'):
 					AuIdListTmp = map(lambda x:x['AuId'], id1CitePaper['AA'])
 					AuIdListTmp.sort()
 					jointAuIdList = join(AuIdListTmp, AuIdList2)
@@ -246,7 +246,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 	
 	now = time.time()
 	pool = Pool(20)
-	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=50000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	Id2citedResult = pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url,))
 	if json1.has_key('RId'):
 		urlAttributes = 'Id,RId'
@@ -372,7 +372,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 		# Id-Id-AA.AuId-Id
 		if json2.has_key('AA'):
 			for id1CitePaper in id1CitePapersInfo:
-				if id1CitePaper.has_key('F'):
+				if id1CitePaper.has_key('AA'):
 					AuIdListTmp = map(lambda x:x['AuId'], id1CitePaper['AA'])
 					AuIdListTmp.sort()
 					jointAuIdList = join(AuIdListTmp, AuIdList2)
@@ -782,8 +782,8 @@ def main():
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
 	now = time.time()
-	#print len(query(2044675247, 1982462162))
-	print len(query(2140619391,2044675247))
+	print len(query(2124516956, 2124516956))
+	#print len(query(2140619391,2044675247))
 	print time.time() - now
 
 if __name__ == '__main__':
