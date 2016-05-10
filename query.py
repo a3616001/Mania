@@ -611,7 +611,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 	# Id-Id-Id-AuId
 	if json1.has_key('RId'):
 		pool = Pool(20)
-		citePaperInfoResults = pool.map_async(lambda x:getPaperJson(x, 'RId'), RIdList)
+		citePaperInfoResults = pool.map_async(lambda x:getPaperJson(x, 'RId,Id'), RIdList)
 		pool.close()
 		pool.join()
 		citePaperInfos = citePaperInfoResults.get()
@@ -620,7 +620,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 				RIdListTmp = citePaperInfo['RId']
 				RIdListTmp.sort()
 				jointRIdList = join(RIdListTmp, paperIdList)
-				map(lambda x: ans.append([id1, RId, x, auId2]), jointRIdList)
+				map(lambda x: ans.append([id1, citePaperInfo['Id'], x, auId2]), jointRIdList)
 
 	# Id-AA.AuId-AA.AfId-AuId
 	if len(AFIdSet2) > 0:
@@ -782,8 +782,8 @@ def main():
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
 	now = time.time()
-	print len(query(2044675247, 1982462162))
-	#print len(query(2044675247,1982462162))
+	#print len(query(2044675247, 1982462162))
+	print len(query(2140619391,2044675247))
 	print time.time() - now
 
 if __name__ == '__main__':
