@@ -2,6 +2,7 @@ import urllib2 as urllib
 import ujson as json
 import numpy as np
 #import json
+from join import *
 import sys
 import time
 from multiprocessing.dummy import Pool
@@ -17,24 +18,24 @@ def getPaperJson(id, urlAttributes):
 	result = json.loads(f.read())
 	return result['entities'][0]
 
-def join(l1, l2): # join two sorted list
-	n1 = len(l1)
-	n2 = len(l2)
-	#l1.sort()
-	#l2.sort()
-	p1 = 0
-	p2 = 0
-	ret = []
-	while p1 < n1 and p2 < n2:
-		if l1[p1] < l2[p2]:
-			p1 += 1
-		elif l1[p1] > l2[p2]:
-			p2 += 1
-		else:
-			ret.append(l1[p1])
-			p1 += 1
-			p2 += 1
-	return ret
+#def join(l1, l2): # join two sorted list
+#	n1 = len(l1)
+#	n2 = len(l2)
+#	#l1.sort()
+#	#l2.sort()
+#	p1 = 0
+#	p2 = 0
+#	ret = []
+#	while p1 < n1 and p2 < n2:
+#		if l1[p1] < l2[p2]:
+#			p1 += 1
+#		elif l1[p1] > l2[p2]:
+#			p2 += 1
+#		else:
+#			ret.append(l1[p1])
+#			p1 += 1
+#			p2 += 1
+#	return ret
 
 def query_Id_Id_big(id1, id2, json1, json2):
 	#sys.stderr.write('query_Id_Id ' + str(id1) + ' ' + str(id2) + '\n')
@@ -612,7 +613,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 		pool = Pool(20)
 		citePaperInfoResults = pool.map_async(lambda x:getPaperJson(x, 'RId'), RIdList)
 		pool.close()
-		#pool.join()
+		pool.join()
 		citePaperInfos = citePaperInfoResults.get()
 		for citePaperInfo in citePaperInfos:
 			if citePaperInfo.has_key('RId'):
@@ -781,7 +782,7 @@ def main():
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
 	now = time.time()
-	print len(query(621499171, 2100837269))
+	print len(query(2044675247, 1982462162))
 	#print len(query(2044675247,1982462162))
 	print time.time() - now
 
