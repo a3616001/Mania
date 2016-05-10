@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
 import json
 import os
-from query_map import *
+from query import *
+#import query_original
 import time
 app = Flask(__name__)
 
@@ -22,6 +23,11 @@ def call():
     ans = query(int(id1), int(id2))
     print 'Answer Number = ', len(ans)
     print "time: {}".format(time.time() - now)
+
+#    now = time.time()
+#    ans = query_original.query(int(id1), int(id2))
+#    print 'Answer Number = ', len(ans)
+#    print 'time: {}'.format(time.time() - now)
     return json.dumps(ans)
 
 

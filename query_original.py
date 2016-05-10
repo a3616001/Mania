@@ -2,14 +2,13 @@ import urllib2 as urllib
 import ujson as json
 import numpy as np
 #import json
-#from join import *
 import sys
 import time
 from multiprocessing.dummy import Pool
 
-#def ans.append(path):
-#	#print path
-#	ans.append(path)
+def answer(ans, path):
+	#print path
+	ans.append(path)
 
 def getPaperJson(id, urlAttributes):
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Id=%d&count=1000&attributes=%s&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id,urlAttributes)
@@ -48,19 +47,17 @@ def query_Id_Id_big(id1, id2, json1, json2):
 	#json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId')
 	#print json1['RId']
 	#print json2
-
-	pool = Pool(20)
 	
 	now = time.time()
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,CC>0)&count=50000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	Id2citedResult = pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url, ))
+	Id2cited = json.loads(urllib.urlopen(url).read())['entities']
 	print 'time use2: ', time.time() - now
 	# =========== 1-hop =========== 
 
 	# Id-Id
 	if json1.has_key('RId') and id2 in json1['RId']:
-		ans.append([id1, id2])
+		answer(ans, [id1, id2])
 
 	# =========== 2-hop =========== 
 
@@ -73,16 +70,16 @@ def query_Id_Id_big(id1, id2, json1, json2):
 		FIdList2.sort()		
 	if json1.has_key('F') and json2.has_key('F'):
 		jointFIdList = join(FIdList1, FIdList2)
-		map(lambda x: ans.append([id1, x, id2]), jointFIdList)
-			
+		for FId in jointFIdList:
+			answer(ans, [id1, FId, id2])
 
 	# Id-J.JId-Id
 	if json1.has_key('J') and json2.has_key('J') and json1['J']['JId'] == json2['J']['JId']:
-		ans.append([id1, json1['J']['JId'], id2])
+		answer(ans, [id1, json1['J']['JId'], id2])
 
 	# Id-C.CId-Id
 	if json1.has_key('C') and json2.has_key('C') and json1['C']['CId'] == json2['C']['CId']:
-		ans.append([id1, json1['C']['CId'], id2])
+		answer(ans, [id1, json1['C']['CId'], id2])
 
 	# Id-AA.AuId-Id
 	if json1.has_key('AA'):
@@ -93,20 +90,19 @@ def query_Id_Id_big(id1, id2, json1, json2):
 		AuIdList2.sort()
 	if json1.has_key('AA') and json2.has_key('AA'):
 		jointAuIdList = join(AuIdList1, AuIdList2)
-		map(lambda x: ans.append([id1, x, id2]), jointAuIdList)
-			
+		for AuId in jointAuIdList:
+			answer(ans, [id1, AuId, id2])
 
 	# Id-Id-Id
 	# TODO 
-	Id2cited = Id2citedResult.get()
 	if json1.has_key('RId'):
 		RIdList = json1['RId']
 		Id2citedList = map(lambda x:x['Id'], Id2cited)
 		RIdList.sort()
 		Id2citedList.sort()
 		jointRIdList = join(RIdList, Id2citedList)
-		map(lambda x: ans.append([id1, x, id2]), jointRIdList)
-			
+		for RId in jointRIdList:
+			answer(ans, [id1, RId, id2])
 
 	# =========== 3-hop =========== 
 
@@ -115,6 +111,7 @@ def query_Id_Id_big(id1, id2, json1, json2):
 
 		now = time.time()
 		poolResult = []
+		pool = Pool(20)
 		if json1.has_key('F'):
 			for FId in FIdList1:
 				url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,Composite(F.FId=%d))&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id2, FId)
@@ -140,32 +137,32 @@ def query_Id_Id_big(id1, id2, json1, json2):
 			for FId in FIdList1:
 				comPaperList = poolResult[idx].get()
 				idx += 1
-				map(lambda x: ans.append([id1, FId, x['Id'], id2]), comPaperList)
-					
+				for comPaper in comPaperList:
+					answer(ans, [id1, FId, comPaper['Id'], id2])
 
 		# Id-J.JId-Id-Id
 		if json1.has_key('J'):
 			JId = json1['J']['JId']
 			comPaperList = poolResult[idx].get()
 			idx += 1
-			map(lambda x: ans.append([id1, JId, x['Id'], id2]), comPaperList)
-				
+			for comPaper in comPaperList:
+				answer(ans, [id1, JId, comPaper['Id'], id2])
 
 		# Id-C.CId-Id-Id
 		if json1.has_key('C'):
 			CId = json1['C']['CId']
 			comPaperList = poolResult[idx].get()
 			idx += 1
-			map(lambda x: ans.append([id1, CId, x['Id'], id2]), comPaperList)
-				
+			for comPaper in comPaperList:
+				answer(ans, [id1, CId, comPaper['Id'], id2])
 		
 		# Id-AA.AuId-Id-Id
 		if json1.has_key('AA'):
 			for AuId in AuIdList1:
 				comPaperList = poolResult[idx].get()
 				idx += 1
-				map(lambda x: ans.append([id1, AuId, x['Id'], id2]), comPaperList)
-					
+				for comPaper in comPaperList:
+					answer(ans, [id1, AuId, comPaper['Id'], id2])
 
 	# Id-Id-*-Id
 	if json1.has_key('RId'):
@@ -193,20 +190,20 @@ def query_Id_Id_big(id1, id2, json1, json2):
 					FIdListTmp = map(lambda x:x['FId'], id1CitePaper['F'])
 					FIdListTmp.sort()
 					jointFIdList = join(FIdListTmp, FIdList2)
-					map(lambda x: ans.append([id1, id1CitePaper['Id'], x, id2]), jointFIdList)
-						
+					for FId in jointFIdList:
+						answer(ans, [id1, id1CitePaper['Id'], FId, id2])
 
 		# Id-Id-J.JId-Id
 		if json2.has_key('J'):
 			for id1CitePaper in id1CitePapersInfo:
 				if id1CitePaper.has_key('J') and id1CitePaper['J']['JId'] == json2['J']['JId']:
-					ans.append([id1, id1CitePaper['Id'], json2['J']['JId'], id2])
+					answer(ans, [id1, id1CitePaper['Id'], json2['J']['JId'], id2])
 
 		# Id-Id-C.CId-Id
 		if json2.has_key('C'):
 			for id1CitePaper in id1CitePapersInfo:
 				if id1CitePaper.has_key('C') and id1CitePaper['C']['CId'] == json2['C']['CId']:
-					ans.append([id1, id1CitePaper['Id'], json2['C']['CId'], id2])
+					answer(ans, [id1, id1CitePaper['Id'], json2['C']['CId'], id2])
 
 		# Id-Id-AA.AuId-Id
 		if json2.has_key('AA'):
@@ -215,8 +212,8 @@ def query_Id_Id_big(id1, id2, json1, json2):
 					AuIdListTmp = map(lambda x:x['AuId'], id1CitePaper['AA'])
 					AuIdListTmp.sort()
 					jointAuIdList = join(AuIdListTmp, AuIdList2)
-					map(lambda x: ans.append([id1, id1CitePaper['Id'], x, id2]), jointAuIdList)
-						
+					for AuId in jointAuIdList:
+						answer(ans, [id1, id1CitePaper['Id'], AuId, id2])
 
 		# Id-Id-Id-Id
 		tmp = len(ans)
@@ -225,8 +222,8 @@ def query_Id_Id_big(id1, id2, json1, json2):
 				RIdListTmp = id1CitePaper['RId']
 				RIdListTmp.sort()
 				jointRIdList = join(RIdListTmp, Id2citedList)
-				map(lambda x: ans.append([id1, id1CitePaper['Id'], x, id2]), jointRIdList)
-					
+				for RId in jointRIdList:
+					answer(ans, [id1, id1CitePaper['Id'], RId, id2])
 		print 'len(Id-Id-Id-Id) =', len(ans)-tmp
 
 	# return ans
@@ -265,7 +262,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 
 	# Id-Id
 	if json1.has_key('RId') and id2 in json1['RId']:
-		ans.append([id1, id2])
+		answer(ans, [id1, id2])
 
 	# =========== 2-hop =========== 
 
@@ -278,16 +275,16 @@ def query_Id_Id_small(id1, id2, json1, json2):
 		FIdList2.sort()		
 	if json1.has_key('F') and json2.has_key('F'):
 		jointFIdList = join(FIdList1, FIdList2)
-		map(lambda x: ans.append([id1, x, id2]), jointFIdList)
-			
+		for FId in jointFIdList:
+			answer(ans, [id1, FId, id2])
 
 	# Id-J.JId-Id
 	if json1.has_key('J') and json2.has_key('J') and json1['J']['JId'] == json2['J']['JId']:
-		ans.append([id1, json1['J']['JId'], id2])
+		answer(ans, [id1, json1['J']['JId'], id2])
 
 	# Id-C.CId-Id
 	if json1.has_key('C') and json2.has_key('C') and json1['C']['CId'] == json2['C']['CId']:
-		ans.append([id1, json1['C']['CId'], id2])
+		answer(ans, [id1, json1['C']['CId'], id2])
 
 	# Id-AA.AuId-Id
 	if json1.has_key('AA'):
@@ -298,8 +295,8 @@ def query_Id_Id_small(id1, id2, json1, json2):
 		AuIdList2.sort()
 	if json1.has_key('AA') and json2.has_key('AA'):
 		jointAuIdList = join(AuIdList1, AuIdList2)
-		map(lambda x: ans.append([id1, x, id2]), jointAuIdList)
-			
+		for AuId in jointAuIdList:
+			answer(ans, [id1, AuId, id2])
 
 	# Id-Id-Id
 	Id2cited = Id2citedResult.get()
@@ -309,8 +306,8 @@ def query_Id_Id_small(id1, id2, json1, json2):
 		RIdList.sort()
 		Id2citedList.sort()
 		jointRIdList = join(RIdList, Id2citedList)
-		map(lambda x: ans.append([id1, x, id2]), jointRIdList)
-			
+		for RId in jointRIdList:
+			answer(ans, [id1, RId, id2])
 
 	# =========== 3-hop =========== 
 
@@ -322,19 +319,19 @@ def query_Id_Id_small(id1, id2, json1, json2):
 				if paper.has_key('F'):
 					for F_element in paper['F']:
 						if F_element['FId'] in FIdList1:
-							ans.append([id1, F_element['FId'], paper['Id'], id2])
+							answer(ans, [id1, F_element['FId'], paper['Id'], id2])
 
 		# Id-J.JId-Id-Id
 		if json1.has_key('J'):
 			for paper in Id2cited:
 				if paper.has_key('J') and paper['J']['JId'] == json1['J']['JId']:
-					ans.append([id1, json1['J']['JId'], paper['Id'], id2])
+					answer(ans, [id1, json1['J']['JId'], paper['Id'], id2])
 
 		# Id-C.CId-Id-Id
 		if json1.has_key('C'):
 			for paper in Id2cited:
 				if paper.has_key('C') and paper['C']['CId'] == json1['C']['CId']:
-					ans.append([id1, json1['C']['CId'], paper['Id'], id2])
+					answer(ans, [id1, json1['C']['CId'], paper['Id'], id2])
 		
 		# Id-AA.AuId-Id-Id
 		if json1.has_key('AA'):
@@ -342,7 +339,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 				if paper.has_key('AA'):
 					for AA_element in paper['AA']:
 						if AA_element['AuId'] in AuIdList1:
-							ans.append([id1, AA_element['AuId'], paper['Id'], id2])
+							answer(ans, [id1, AA_element['AuId'], paper['Id'], id2])
 
 	# Id-Id-*-Id
 	if json1.has_key('RId'):
@@ -354,20 +351,20 @@ def query_Id_Id_small(id1, id2, json1, json2):
 					FIdListTmp = map(lambda x:x['FId'], id1CitePaper['F'])
 					FIdListTmp.sort()
 					jointFIdList = join(FIdListTmp, FIdList2)
-					map(lambda x: ans.append([id1, id1CitePaper['Id'], x, id2]), jointFIdList)
-						
+					for FId in jointFIdList:
+						answer(ans, [id1, id1CitePaper['Id'], FId, id2])
 
 		# Id-Id-J.JId-Id
 		if json2.has_key('J'):
 			for id1CitePaper in id1CitePapersInfo:
 				if id1CitePaper.has_key('J') and id1CitePaper['J']['JId'] == json2['J']['JId']:
-					ans.append([id1, id1CitePaper['Id'], json2['J']['JId'], id2])
+					answer(ans, [id1, id1CitePaper['Id'], json2['J']['JId'], id2])
 
 		# Id-Id-C.CId-Id
 		if json2.has_key('C'):
 			for id1CitePaper in id1CitePapersInfo:
 				if id1CitePaper.has_key('C') and id1CitePaper['C']['CId'] == json2['C']['CId']:
-					ans.append([id1, id1CitePaper['Id'], json2['C']['CId'], id2])
+					answer(ans, [id1, id1CitePaper['Id'], json2['C']['CId'], id2])
 
 		# Id-Id-AA.AuId-Id
 		if json2.has_key('AA'):
@@ -376,8 +373,8 @@ def query_Id_Id_small(id1, id2, json1, json2):
 					AuIdListTmp = map(lambda x:x['AuId'], id1CitePaper['AA'])
 					AuIdListTmp.sort()
 					jointAuIdList = join(AuIdListTmp, AuIdList2)
-					map(lambda x: ans.append([id1, id1CitePaper['Id'], x, id2]), jointAuIdList)
-						
+					for AuId in jointAuIdList:
+						answer(ans, [id1, id1CitePaper['Id'], AuId, id2])
 
 		# Id-Id-Id-Id
 		tmp = len(ans)
@@ -386,8 +383,8 @@ def query_Id_Id_small(id1, id2, json1, json2):
 				RIdListTmp = id1CitePaper['RId']
 				RIdListTmp.sort()
 				jointRIdList = join(RIdListTmp, Id2citedList)
-				map(lambda x: ans.append([id1, id1CitePaper['Id'], x, id2]), jointRIdList)
-					
+				for RId in jointRIdList:
+					answer(ans, [id1, id1CitePaper['Id'], RId, id2])
 		print 'len(Id-Id-Id-Id) =', len(ans)-tmp
 
 	# return ans
@@ -411,11 +408,9 @@ def query_AuId_Id(auId1, id2, json1, json2):
 			for author in paper['AA']:
 				if author['AuId'] == auId1 and author.has_key('AfId'):
 					AFIdSet1.add(author['AfId'])
-	pool = Pool(20)
-	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=100000&orderby=CC:desc&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	Id2citedResult = pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url,))
 	if len(AFIdSet1) > 0:
 		authorPaperListResult = []
+		pool = Pool(20)
 		if json2.has_key('AA'):
 			for author in json2['AA']:
 				url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=3000&attributes=AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%author['AuId']
@@ -426,7 +421,7 @@ def query_AuId_Id(auId1, id2, json1, json2):
 	# AuId-Id
 	for paper in json1:
 		if paper['Id'] == id2:
-			ans.append([auId1, id2])
+			answer(ans, [auId1, id2])
 			break
 
 
@@ -435,7 +430,7 @@ def query_AuId_Id(auId1, id2, json1, json2):
 	# AuId-Id-Id
 	for paper in json1:
 		if paper.has_key('RId') and (id2 in paper['RId']):
-			ans.append([auId1, paper['Id'], id2])
+			answer(ans, [auId1, paper['Id'], id2])
 
 	# =========== 3-hop =========== 
 
@@ -448,22 +443,22 @@ def query_AuId_Id(auId1, id2, json1, json2):
 				FIdListTmp = map(lambda x:x['FId'], paper['F'])
 				FIdListTmp.sort()
 				jointFIdList = join(FIdListTmp, FIdList2)
-				map(lambda x: ans.append([auId1, paper['Id'], x, id2]), jointFIdList)
-					
+				for FId in jointFIdList:
+					answer(ans, [auId1, paper['Id'], FId, id2])
 
 	# AuId-Id-C.CId-Id
 	if json2.has_key('C'):
 		CId2 = json2['C']['CId']
 		for paper in json1:
 			if paper.has_key('C') and paper['C']['CId'] == CId2:
-				ans.append([auId1, paper['Id'], CId2, id2])
+				answer(ans, [auId1, paper['Id'], CId2, id2])
 
 	# AuId-Id-J.JId-Id
 	if json2.has_key('J'):
 		JId2 = json2['J']['JId']
 		for paper in json1:
 			if paper.has_key('J') and paper['J']['JId'] == JId2:
-				ans.append([auId1, paper['Id'], JId2, id2])
+				answer(ans, [auId1, paper['Id'], JId2, id2])
 
 	# AuId-Id-AA.AuId-Id
 	if json2.has_key('AA'):
@@ -474,13 +469,14 @@ def query_AuId_Id(auId1, id2, json1, json2):
 				AuIdListTmp = map(lambda x:x['AuId'], paper['AA'])
 				AuIdListTmp.sort()
 				jointAuIdList = join(AuIdListTmp, AuIdList2)
-				map(lambda x: ans.append([auId1, paper['Id'], x, id2]), jointAuIdList)
-					
+				for AuId in jointAuIdList:
+					answer(ans, [auId1, paper['Id'], AuId, id2])
 
 	# AuId-Id-Id-Id
-	now = time.time()
-	Id2cited = Id2citedResult.get()
-	print 'time use3:', time.time() - now
+	#now = time.time()
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=100000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	Id2cited = json.loads(urllib.urlopen(url).read())['entities']
+	#print 'time use3:', time.time() - now
 	if len(Id2cited) > 0:
 		Id2citedList = map(lambda x:x['Id'], Id2cited)
 		Id2citedList.sort()
@@ -489,8 +485,8 @@ def query_AuId_Id(auId1, id2, json1, json2):
 				RIdListTmp = paper['RId']
 				RIdListTmp.sort()
 				jointRIdList = join(RIdListTmp, Id2citedList)
-				map(lambda x: ans.append([auId1, paper['Id'], x, id2]), jointRIdList)
-					
+				for RId in jointRIdList:
+					answer(ans, [auId1, paper['Id'], RId, id2])
 
 	# AuId-AA.AFId-AA.AuId-Id
 	if len(AFIdSet1) > 0:
@@ -505,7 +501,7 @@ def query_AuId_Id(auId1, id2, json1, json2):
 					if paper.has_key('AA'):
 						for author2 in paper['AA']:
 							if author2['AuId'] == auId2 and author2.has_key('AfId') and (author2['AfId'] in AFIdSet1) and not((author2['AfId'], auId2) in uniqueSet):
-								ans.append([auId1, author2['AfId'], auId2, id2])
+								answer(ans, [auId1, author2['AfId'], auId2, id2])
 								uniqueSet.add((author2['AfId'], auId2))
 
 	#AFIdSet1 = set()
@@ -518,7 +514,7 @@ def query_AuId_Id(auId1, id2, json1, json2):
 	#	for author in json2['AA']:
 	#		if author.has_key('AfId'):
 	#			if author['AfId'] in AFIdSet1:
-	#				ans.append([auId1, author['AfId'], author['AuId'], id2])
+	#				answer(ans, [auId1, author['AfId'], author['AuId'], id2])
 	
 	return ans
 
@@ -557,7 +553,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 
 	# Id-AuId
 	if json1.has_key('AA') and (auId2 in map(lambda x:x['AuId'], json1['AA'])):
-		ans.append([id1, auId2])
+		answer(ans, [id1, auId2])
 
 	# =========== 2-hop ===========
 
@@ -566,8 +562,8 @@ def query_Id_AuId(id1, auId2, json1, json2):
 		RIdList = json1['RId']
 		RIdList.sort()
 		jointRIdList = join(paperIdList, RIdList)
-		map(lambda x: ans.append([id1, x, auId2]), jointRIdList)
-			
+		for RId in jointRIdList:
+			answer(ans, [id1, RId, auId2])
 
 	# =========== 3-hop ===========
 
@@ -580,21 +576,22 @@ def query_Id_AuId(id1, auId2, json1, json2):
 				FIdListTmp = map(lambda x:x['FId'], paper['F'])
 				FIdListTmp.sort()
 				jointFIdList = join(FIdListTmp, FIdList1)
-				map(lambda x: ans.append([id1, x, paper['Id'], auId2]), jointFIdList)
+				for FId in jointFIdList:
+					answer(ans, [id1, FId, paper['Id'], auId2])
 
 	# Id-C.CId-Id-AuId
 	if json1.has_key('C'):
 		CId1 = json1['C']['CId']
 		for paper in json2:
 			if paper.has_key('C') and paper['C']['CId'] == CId1:
-				ans.append([id1, CId1, paper['Id'], auId2])
+				answer(ans, [id1, CId1, paper['Id'], auId2])
 
 	# Id-J.JId-Id-AuId
 	if json1.has_key('J'):
 		JId1 = json1['J']['JId']
 		for paper in json2:
 			if paper.has_key('J') and paper['J']['JId'] == JId1:
-				ans.append([id1, JId1, paper['Id'], auId2])
+				answer(ans, [id1, JId1, paper['Id'], auId2])
 
 	# Id-AA.AuId-Id-AuId
 	if json1.has_key('AA'):
@@ -605,22 +602,23 @@ def query_Id_AuId(id1, auId2, json1, json2):
 				AuIdListTmp = map(lambda x:x['AuId'], paper['AA'])
 				AuIdListTmp.sort()
 				jointAuIdList = join(AuIdListTmp, AuIdList1)
-				map(lambda x: ans.append([id1, x, paper['Id'], auId2]), jointAuIdList)
-					
+				for AuId in jointAuIdList:
+					answer(ans, [id1, AuId, paper['Id'], auId2])
 
 	# Id-Id-Id-AuId
 	if json1.has_key('RId'):
 		pool = Pool(20)
 		citePaperInfoResults = pool.map_async(lambda x:getPaperJson(x, 'RId'), RIdList)
 		pool.close()
-		pool.join()
+		#pool.join()
 		citePaperInfos = citePaperInfoResults.get()
 		for citePaperInfo in citePaperInfos:
 			if citePaperInfo.has_key('RId'):
 				RIdListTmp = citePaperInfo['RId']
 				RIdListTmp.sort()
 				jointRIdList = join(RIdListTmp, paperIdList)
-				map(lambda x: ans.append([id1, RId, x, auId2]), jointRIdList)
+				for comRId in jointRIdList:
+					answer(ans, [id1, RId, comRId, auId2])
 
 	# Id-AA.AuId-AA.AfId-AuId
 	if len(AFIdSet2) > 0:
@@ -635,7 +633,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 					if paper.has_key('AA'):
 						for author2 in paper['AA']:
 							if author2['AuId'] == auId1 and author2.has_key('AfId') and (author2['AfId'] in AFIdSet2) and not((auId1, author2['AfId']) in uniqueSet):
-								ans.append([id1, auId1, author2['AfId'], auId2])
+								answer(ans, [id1, auId1, author2['AfId'], auId2])
 								uniqueSet.add((auId1, author2['AfId']))
 
 	#AFIdSet2 = set()
@@ -648,7 +646,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 	#	for author in json1['AA']:
 	#		if author.has_key('AfId'):
 	#			if author['AfId'] in AFIdSet2:
-	#				ans.append([id1, author['AuId'], author['AfId'], auId2])
+	#				answer(ans, [id1, author['AuId'], author['AfId'], auId2])
 
 	#print 'time use2: ', time.time() - now
 	return ans
@@ -660,42 +658,42 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 	# =========== 2-hop ===========
 	print len(json1), len(json2)
 	# print json2
-	AFIdSet1 = set()
+	AFIdList1 = []
 	IdList1 = []
 	for paper1 in json1:
 		if paper1.has_key('AA'):
 			for i in paper1['AA']:
 				if i.has_key('AfId') and i['AuId'] == auId1:
-					AFIdSet1.add(i['AfId'])
+					AFIdList1.append(i['AfId'])
 		if paper1.has_key('Id'):
 			IdList1.append(paper1['Id'])
 	IdList1.sort()
 
-	AFIdSet2 = set()
+	AFIdList2 = []
 	IdList2 = []
 	for paper2 in json2:
 		if paper2.has_key('AA'):
 			for i in paper2['AA']:
 				if i.has_key('AfId') and i['AuId'] == auId2:
-					AFIdSet2.add(i['AfId'])
+					AFIdList2.append(i['AfId'])
 		if paper2.has_key('Id'):
 			IdList2.append(paper2['Id'])
 	IdList2.sort()
 
 	#AuId-AFId-AuId
-	if len(AFIdSet1)>0 and len(AFIdSet2)>0:
+	if len(AFIdList1)>0 and len(AFIdList2)>0:
 		# AFIdList1.sort()
 		# AFIdList2.sort()
 		# jointAFIdList = join(AFIdList1, AFIdList2)
-		# jointAFIdList = np.intersect1d(AFIdList1, AFIdList2)
-		jointAFIdSet = AFIdSet1.intersection(AFIdSet2)
-		# for AFId in jointAFIdList:
-		map(lambda x: ans.append([auId1, x, auId2]), jointAFIdSet)
+		jointAFIdList = np.intersect1d(AFIdList1, AFIdList2)
+		for AFId in jointAFIdList:
+			answer(ans, [auId1, AFId, auId2])
 	print len(ans)
 	#AuId-Id-AuId
 	if len(IdList1)>0 and len(IdList2)>0:
 		jointIdList = join(IdList1, IdList2)
-		map(lambda x: ans.append([auId1, x, auId2]), jointIdList)
+		for id in jointIdList:
+			answer(ans, [auId1, id, auId2])
 	print len(ans)
 	# =========== 3-hop ===========
 
@@ -705,11 +703,12 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 			RIdList = paper1['RId']
 			RIdList.sort()
 			jointList = join(RIdList, IdList2)
-			map(lambda x: ans.append([auId1, paper1['Id'], x, auId2]), jointList)
+			for i in jointList:
+				answer(ans, [auId1, paper1['Id'], i, auId2])
 			# paper1['RId'] = dict(zip(paper1['RId'], range(len(paper1['RId']))))
 			# for paper2 in json2:
 			# 	if paper2['Id'] in paper1['RId']:
-			# 		ans.append([auId1, paper1['Id'], paper2['Id'], auId2])
+			# 		answer(ans, [auId1, paper1['Id'], paper2['Id'], auId2])
 	print len(ans)
 	return ans
 
@@ -781,10 +780,7 @@ def main():
 	#query(2175015405, 1514498087)
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
-	now = time.time()
-	print len(query(2044675247, 1982462162))
-	#print len(query(2044675247,1982462162))
-	print time.time() - now
+	print len(query(1995672491,1982462162))
 
 if __name__ == '__main__':
     main()
