@@ -7,6 +7,8 @@ import sys
 import time
 from multiprocessing.dummy import Pool
 
+threadnum = 50
+
 #def ans.append(path):
 #	#print path
 #	ans.append(path)
@@ -49,7 +51,7 @@ def query_Id_Id_big(id1, id2, json1, json2):
 	#print json1['RId']
 	#print json2
 
-	pool = Pool(20)
+	pool = Pool(threadnum)
 	
 	now = time.time()
 	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
@@ -180,7 +182,7 @@ def query_Id_Id_big(id1, id2, json1, json2):
 		if json2.has_key('AA'):
 			urlAttributes += ',AA.AuId'
 		now = time.time()	
-		pool = Pool(20)	
+		pool = Pool(threadnum)	
 		id1CitePapersInfoResult = pool.map_async(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
 		pool.close()
 		#pool.join()
@@ -245,7 +247,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 	#print json2
 	
 	now = time.time()
-	pool = Pool(20)
+	pool = Pool(threadnum)
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=50000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	Id2citedResult = pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url,))
 	if json1.has_key('RId'):
@@ -411,7 +413,7 @@ def query_AuId_Id(auId1, id2, json1, json2):
 			for author in paper['AA']:
 				if author['AuId'] == auId1 and author.has_key('AfId'):
 					AFIdSet1.add(author['AfId'])
-	pool = Pool(20)
+	pool = Pool(threadnum)
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=100000&orderby=CC:desc&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	Id2citedResult = pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url,))
 	if len(AFIdSet1) > 0:
@@ -543,7 +545,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 					AFIdSet2.add(author['AfId'])
 	if len(AFIdSet2) > 0:
 		authorPaperListResult = []
-		pool = Pool(20)
+		pool = Pool(threadnum)
 		if json1.has_key('AA'):
 			for author in json1['AA']:
 				url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=3000&attributes=AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%author['AuId']
@@ -610,7 +612,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 
 	# Id-Id-Id-AuId
 	if json1.has_key('RId'):
-		pool = Pool(20)
+		pool = Pool(threadnum)
 		citePaperInfoResults = pool.map_async(lambda x:getPaperJson(x, 'RId,Id'), RIdList)
 		pool.close()
 		pool.join()
@@ -748,7 +750,7 @@ def query(id1, id2):
 	#url1 = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id1
 	#url2 = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Composite(AA.AuId=%d)&count=20000&attributes=Id,F.FId,J.JId,C.CId,AA.AuId,AA.AfId&orderby=D:asc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	#poolResult = []
-	#pool = Pool(20)
+	#pool = Pool(threadnum)
 	#poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url1,)))
 	#poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url2,)))
 	#poolResult.append(pool.apply_async(getPaperJson, (id1, 'RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId')))
