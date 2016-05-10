@@ -208,7 +208,7 @@ def query_Id_Id_big(id1, id2, json1, json2):
 		# Id-Id-AA.AuId-Id
 		if json2.has_key('AA'):
 			for id1CitePaper in id1CitePapersInfo:
-				if id1CitePaper.has_key('F'):
+				if id1CitePaper.has_key('AA'):
 					AuIdListTmp = map(lambda x:x['AuId'], id1CitePaper['AA'])
 					AuIdListTmp.sort()
 					jointAuIdList = join(AuIdListTmp, AuIdList2)
@@ -613,12 +613,12 @@ def query_Id_AuId(id1, auId2, json1, json2):
 		#pool.join()
 		citePaperInfos = citePaperInfoResults.get()
 		for citePaperInfo in citePaperInfos:
-			if citePaperInfo.has_key('RId'):
+			if citePaperInfo.has_key('RId,Id'):
 				RIdListTmp = citePaperInfo['RId']
 				RIdListTmp.sort()
 				jointRIdList = join(RIdListTmp, paperIdList)
 				for comRId in jointRIdList:
-					answer(ans, [id1, RId, comRId, auId2])
+					answer(ans, [id1, citePaperInfo['Id'], comRId, auId2])
 
 	# Id-AA.AuId-AA.AfId-AuId
 	if len(AFIdSet2) > 0:

@@ -167,7 +167,7 @@ def query_Id_Id(id1, id2):
 		# Id-Id-AA.AuId-Id
 		if json2.has_key('AA'):
 			for id1CitePaper in id1CitePapersInfo:
-				if id1CitePaper.has_key('F'):
+				if id1CitePaper.has_key('AA'):
 					AuIdListTmp = map(lambda x:x['AuId'], id1CitePaper['AA'])
 					AuIdListTmp.sort()
 					jointAuIdList = join(AuIdListTmp, AuIdList2)
@@ -345,7 +345,7 @@ def query_Id_AuId(id1, auId2, afId2):
 	# Id-Id-Id-AuId
 	if json1.has_key('RId'):
 		for RId in RIdList:
-			citePaperInfo = getPaperJson(RId, 'RId')
+			citePaperInfo = getPaperJson(RId, 'RId,Id')
 			if citePaperInfo.has_key('RId'):
 				RIdListTmp = citePaperInfo['RId']
 				RIdListTmp.sort()
