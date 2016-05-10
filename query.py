@@ -782,7 +782,7 @@ def main():
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
 	now = time.time()
-	print len(query(2124516956, 2124516956))
+	print len(query(2147152912, 307743305))
 	#print len(query(2140619391,2044675247))
 	print time.time() - now
 
