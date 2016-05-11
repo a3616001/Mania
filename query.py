@@ -21,8 +21,9 @@ def getPaperJson(id, urlAttributes):
 	return result['entities'][0]
 
 def getPaperJsonList(idList, urlAttributes):
+	if idList == []:
+		return []
 	now = time.time()
-
 	pool = Pool(threadnum)
 	PaperJsonList = []
 	poolResult = []
@@ -837,7 +838,7 @@ def main():
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
 	now = time.time()
-	print len(query(2140619391, 1514498087))
+	print len(query(2292217923, 2100837269))
 	#print len(query(2140619391,2044675247))
 	print time.time() - now
 
