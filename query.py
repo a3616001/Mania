@@ -51,12 +51,21 @@ def query_Id_Id_big(id1, id2, json1, json2):
 	#print json1['RId']
 	#print json2
 
-	pool = Pool(threadnum)
-	
 	now = time.time()
-	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=200000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	pool = Pool(threadnum)	
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,CC>0)&count=50000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	Id2citedResult = pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url, ))
+	if json1.has_key('RId'):
+		urlAttributes = 'Id,RId'
+		if json2.has_key('F'):
+			urlAttributes += ',F.FId'
+		if json2.has_key('J'):
+			urlAttributes += ',J.JId'
+		if json2.has_key('C'):
+			urlAttributes += ',C.CId'
+		if json2.has_key('AA'):
+			urlAttributes += ',AA.AuId'
+		id1CitePapersInfoResult = pool.map_async(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
 	print 'time use2: ', time.time() - now
 	# =========== 1-hop =========== 
 
@@ -131,7 +140,7 @@ def query_Id_Id_big(id1, id2, json1, json2):
 			for AuId in AuIdList1:
 				url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,Composite(AA.AuId=%d))&count=200000&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id2, AuId)
 				poolResult.append(pool.apply_async(lambda url: json.loads((urllib.urlopen(url)).read())['entities'], (url, )))
-		pool.close()
+		#pool.close()
 		#pool.join()
 		print 'time use3: ', time.time() - now
 
@@ -171,23 +180,7 @@ def query_Id_Id_big(id1, id2, json1, json2):
 
 	# Id-Id-*-Id
 	if json1.has_key('RId'):
-
-		urlAttributes = 'Id,RId'
-		if json2.has_key('F'):
-			urlAttributes += ',F.FId'
-		if json2.has_key('J'):
-			urlAttributes += ',J.JId'
-		if json2.has_key('C'):
-			urlAttributes += ',C.CId'
-		if json2.has_key('AA'):
-			urlAttributes += ',AA.AuId'
-		now = time.time()	
-		pool = Pool(threadnum)	
-		id1CitePapersInfoResult = pool.map_async(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
-		pool.close()
-		#pool.join()
 		id1CitePapersInfo = id1CitePapersInfoResult.get()
-		print 'time use4: ', time.time() - now
 		# Id-Id-F.FId-Id
 		if json2.has_key('F'):
 			for id1CitePaper in id1CitePapersInfo:
