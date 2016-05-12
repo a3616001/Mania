@@ -17,7 +17,8 @@ threadnum = 50
 #	ans.append(path)
 
 urlcache = dict()
-debug = True
+debug = False
+pool = Pool(threadnum)
 
 def urlrequest(url, first=False):
 	if debug:
@@ -47,7 +48,6 @@ def getPaperJsonList(idList, urlAttributes):
 	if idList == []:
 		return []
 	now = time.time()
-	pool = Pool(threadnum)
 	PaperJsonList = []
 	poolResult = []
 	L = 0
@@ -83,7 +83,6 @@ def getAuthorPaperList(auidList, urlAttributes):
 	if auidList == []:
 		return []
 	now = time.time()
-	pool = Pool(threadnum)
 	authorPaperList = []
 	poolResult = []
 	L = 0
@@ -146,7 +145,6 @@ def query_Id_Id_big(id1, id2, json1, json2):
 	#print json2
 
 	now = time.time()
-	pool = Pool(threadnum)	
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=And(RId=%d,CC>0)&count=50000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	Id2citedResult = pool.apply_async(lambda url:urlrequest(url)['entities'], (url, ))
 	if json1.has_key('RId'):
@@ -336,7 +334,6 @@ def query_Id_Id_small(id1, id2, json1, json2):
 	#print json2
 	
 	now = time.time()
-	pool = Pool(threadnum)
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=50000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	Id2citedResult = pool.apply_async(lambda url:urlrequest(url)['entities'], (url,))
 	if json1.has_key('RId'):
@@ -492,7 +489,6 @@ def query_AuId_Id(auId1, id2, json1, json2):
 	
 	now = time.time()
 	
-	pool = Pool(threadnum)
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=100000&orderby=CC:desc&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
 	Id2citedResult = pool.apply_async(lambda url:urlrequest(url)['entities'], (url,))
 
@@ -583,7 +579,7 @@ def query_AuId_Id(auId1, id2, json1, json2):
 	if len(AFIdSet1) > 0 and json2.has_key('AA'):
 		authorPaperList = getAuthorPaperList(map(lambda x:x['AuId'], json2['AA']), 'AA.AuId,AA.AfId')
 		authorSet2 = set()
-		map(lambda x:authorSet2.add(x['AuId']), json2('AA'))
+		map(lambda x:authorSet2.add(x['AuId']), json2['AA'])
 		uniqueSet = set()
 		for paper in authorPaperList:
 			if paper.has_key('AA'):
@@ -680,10 +676,9 @@ def query_Id_AuId(id1, auId2, json1, json2):
 
 	# Id-Id-Id-AuId
 	if json1.has_key('RId'):
-		pool = Pool(threadnum)
 		citePaperInfoResults = pool.map_async(lambda x:getPaperJson(x, 'RId,Id'), RIdList)
-		pool.close()
-		pool.join()
+		#pool.close()
+		#pool.join()
 		citePaperInfos = citePaperInfoResults.get()
 		for citePaperInfo in citePaperInfos:
 			if citePaperInfo.has_key('RId'):
