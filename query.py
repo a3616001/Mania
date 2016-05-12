@@ -1,10 +1,11 @@
-#import urllib2 as urllib
+import urllib2 as urllib
 import ujson as json
 import numpy as np
 #import json
 from join import *
-import pycurl
-from StringIO import StringIO
+import os
+# import pycurl
+# from StringIO import StringIO
 import sys
 import time
 from multiprocessing.dummy import Pool
@@ -15,14 +16,27 @@ threadnum = 50
 #	#print path
 #	ans.append(path)
 
-def urlrequest(url):
-    buffer = StringIO()
-    c = pycurl.Curl()
-    c.setopt(c.URL, url)
-    c.setopt(c.WRITEDATA, buffer)
-    c.perform()
-    c.close()
-    return json.loads(buffer.getvalue())
+urlcache = dict()
+debug = True
+
+def urlrequest(url, first=False):
+	if debug:
+		return json.loads(urllib.urlopen(url).read())
+	if first:
+		res = urllib.urlopen(url).read()
+		if not urlcache.has_key(url):
+			urlcache[url] = res
+		elif urlcache[url] != res:
+			urlcache.clear()
+			urlcache[url] = res
+		return json.loads(res)
+	else:
+		if not urlcache.has_key(url):
+			res = urllib.urlopen(url).read()
+			urlcache[url] = res
+			return json.loads(res)
+		else:
+			return json.loads(urlcache[url])
 
 def getPaperJson(id, urlAttributes):
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Id=%d&count=1000&attributes=%s&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id,urlAttributes)
@@ -792,7 +806,7 @@ def query(id1, id2):
 	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=Or(Or(Or(Composite(AA.AuId=%d),Composite(AA.AuId=%d)),Id=%d),Id=%d)&count=40000&attributes=Id,RId,F.FId,J.JId,C.CId,AA.AuId,AA.AfId,CC&orderby=D:desc&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id1,id2,id1,id2)
 	#print type(url)
 	#mix = json.loads(urllib.urlopen(url).read())['entities']
-	mix = urlrequest(url)['entities']
+	mix = urlrequest(url, True)['entities']
 	print 'init get time =', time.time() - now
 	#print mix
 	for ele in mix:
@@ -858,7 +872,7 @@ def query(id1, id2):
 		else:
 			return query_Id_Id_small(id1, id2, paperJson1, paperJson2)			
 
-def main():
+def main(id1, id2):
 	#query(2140190241, 1514498087)
 	#query(2140190241, 1490955312)
 	#query(2126125555, 2153635508)
@@ -868,9 +882,9 @@ def main():
 	#print query(2251253715,2180737804)
 	#print len(query(2100837269, 621499171))
 	now = time.time()
-	print len(query(2332023333, 57898110))
+	print len(query(id1, id2))
 	#print len(query(2140619391,2044675247))
 	print time.time() - now
 
 if __name__ == '__main__':
-    main()
+    main(int(sys.argv[1]), int(sys.argv[2]))
