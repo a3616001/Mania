@@ -24,6 +24,11 @@ def call():
     print 'Answer Number = ', len(ans)
     print "time: {}".format(time.time() - now)
 
+    import profile
+    now = time.time()
+    #profile.run('query(int({}), int({}))'.format(id1, id2))
+    print "time: {}".format(time.time() - now)
+
 #    now = time.time()
 #    ans = query_original.query(int(id1), int(id2))
 #    print 'Answer Number = ', len(ans)
