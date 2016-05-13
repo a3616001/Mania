@@ -1,7 +1,5 @@
 import urllib2 as urllib
 import ujson as json
-import numpy as np
-import json
 #from join import *
 import os
 # import pycurl
@@ -10,7 +8,7 @@ import sys
 import time
 from multiprocessing.dummy import Pool
 
-threadnum = 20
+threadnum = 40
 
 #def ans.append(path):
 #	#print path
@@ -323,10 +321,9 @@ def query_Id_Id_big(id1, id2, json1, json2):
 
 def getId2Cited(id, CC, urlAttributes):
 	now = time.time()
-
 	Id2citedResult = []
 	off = 0;
-	cnt = 10000;
+	cnt = max(CC / 20, 1000);
 	while off < CC:
 		url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=%d&offset=%d&attributes=%s&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id,cnt,off,urlAttributes)
 		#print url
