@@ -1,6 +1,8 @@
 import urllib2 as urllib
 import ujson as json
-#from join import *
+import numpy as np
+#import json
+from join import *
 import os
 # import pycurl
 # from StringIO import StringIO
@@ -8,7 +10,7 @@ import sys
 import time
 from multiprocessing.dummy import Pool
 
-threadnum = 40
+threadnum = 20
 
 #def ans.append(path):
 #	#print path
@@ -111,24 +113,24 @@ def getAuthorPaperList(auidList, urlAttributes):
 	print 'getAuthorPaperList time =', time.time() - now
 	return authorPaperList
 
-def join(l1, l2): # join two sorted list
-	n1 = len(l1)
-	n2 = len(l2)
-	#l1.sort()
-	#l2.sort()
-	p1 = 0
-	p2 = 0
-	ret = []
-	while p1 < n1 and p2 < n2:
-		if l1[p1] < l2[p2]:
-			p1 += 1
-		elif l1[p1] > l2[p2]:
-			p2 += 1
-		else:
-			ret.append(l1[p1])
-			p1 += 1
-			p2 += 1
-	return ret
+#def join(l1, l2): # join two sorted list
+#	n1 = len(l1)
+#	n2 = len(l2)
+#	#l1.sort()
+#	#l2.sort()
+#	p1 = 0
+#	p2 = 0
+#	ret = []
+#	while p1 < n1 and p2 < n2:
+#		if l1[p1] < l2[p2]:
+#			p1 += 1
+#		elif l1[p1] > l2[p2]:
+#			p2 += 1
+#		else:
+#			ret.append(l1[p1])
+#			p1 += 1
+#			p2 += 1
+#	return ret
 
 def query_Id_Id_big(id1, id2, json1, json2):
 	#sys.stderr.write('query_Id_Id ' + str(id1) + ' ' + str(id2) + '\n')
@@ -319,25 +321,6 @@ def query_Id_Id_big(id1, id2, json1, json2):
 	# return ans
 	return ans
 
-def getId2Cited(id, CC, urlAttributes):
-	now = time.time()
-	Id2citedResult = []
-	off = 0;
-	cnt = max(CC / 20, 1000);
-	while off < CC:
-		url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=%d&offset=%d&attributes=%s&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%(id,cnt,off,urlAttributes)
-		#print url
-		Id2citedResult.append(pool.apply_async(lambda url:urlrequest(url)['entities'], (url,)))
-		off += cnt
-
-	Id2cited = []
-	for eachResult in Id2citedResult:
-		Id2cited.extend(eachResult.get())
-
-	print 'getId2Cited time =', time.time() - now
-	print 'len(Id2cited) =', len(Id2cited)
-	return Id2cited
-
 def query_Id_Id_small(id1, id2, json1, json2):
 	#sys.stderr.write('query_Id_Id ' + str(id1) + ' ' + str(id2) + '\n')
 	print 'query_Id_Id_small', id1, id2
@@ -349,8 +332,10 @@ def query_Id_Id_small(id1, id2, json1, json2):
 	#json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId')
 	#print json1['RId']
 	#print json2
-	now = time.time()
 	
+	now = time.time()
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=50000&orderby=CC:desc&attributes=Id,F.FId,J.JId,C.CId,AA.AuId&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	Id2citedResult = pool.apply_async(lambda url:urlrequest(url)['entities'], (url,))
 	if 'RId' in json1:
 		urlAttributes = 'Id,RId'
 		if 'F' in json2:
@@ -361,6 +346,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 			urlAttributes += ',C.CId'
 		if 'AA' in json2:
 			urlAttributes += ',AA.AuId'
+	#	id1CitePapersInfoResult = pool.map_async(lambda x:getPaperJson(x, urlAttributes), json1['RId'])
 		id1CitePapersInfo = getPaperJsonList(json1['RId'], urlAttributes)
 	#print 'time use2: ', time.time() - now
 
@@ -405,10 +391,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 			
 
 	# Id-Id-Id
-	if 'CC' in json2:
-		Id2cited = getId2Cited(id2, json2['CC'], 'Id,F.FId,J.JId,C.CId,AA.AuId')
-	else:
-		Id2cited = []
+	Id2cited = Id2citedResult.get()
 	if 'RId' in json1:
 		RIdList = json1['RId']
 		Id2citedList = map(lambda x:x['Id'], Id2cited)
@@ -506,8 +489,8 @@ def query_AuId_Id(auId1, id2, json1, json2):
 	
 	now = time.time()
 	
-	#url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=100000&orderby=CC:desc&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
-	#Id2citedResult = pool.apply_async(lambda url:urlrequest(url)['entities'], (url,))
+	url = 'https://oxfordhk.azure-api.net/academic/v1.0/evaluate?expr=RId=%d&count=100000&orderby=CC:desc&attributes=Id&subscription-key=f7cc29509a8443c5b3a5e56b0e38b5a6'%id2
+	Id2citedResult = pool.apply_async(lambda url:urlrequest(url)['entities'], (url,))
 
 	#now = time.time()
 	#json2 = getPaperJson(id2, 'F.FId,J.JId,C.CId,AA.AuId,AA.AfId')
@@ -569,16 +552,12 @@ def query_AuId_Id(auId1, id2, json1, json2):
 				AuIdListTmp.sort()
 				jointAuIdList = join(AuIdListTmp, AuIdList2)
 				map(lambda x: ans.append([auId1, paper['Id'], x, id2]), jointAuIdList)
-	#print 'AuId-Id-AuId-Id finished time =', time.time() - now	
+	print 'AuId-Id-AuId-Id finished time =', time.time() - now	
 
 	# AuId-Id-Id-Id
 	#now = time.time()
-	#Id2cited = Id2citedResult.get()
-	#print 'Id2cited geted time =', time.time() - now
-	if 'CC' in json2:
-		Id2cited = getId2Cited(id2, json2['CC'], 'Id')
-	else:
-		Id2cited = []
+	Id2cited = Id2citedResult.get()
+	print 'Id2cited geted time =', time.time() - now
 	if len(Id2cited) > 0:
 		Id2citedList = map(lambda x:x['Id'], Id2cited)
 		Id2citedList.sort()
@@ -609,7 +588,7 @@ def query_AuId_Id(auId1, id2, json1, json2):
 					if (auId2 in authorSet2) and 'AfId' in author and (author['AfId'] in AFIdSet1) and not((author['AfId'], auId2) in uniqueSet):
 						ans.append([auId1, author['AfId'], auId2, id2])
 						uniqueSet.add((author['AfId'], auId2))
-	#print 'AuId-AfId-AuId-Id finished time =', time.time() - now
+	print 'AuId-AfId-AuId-Id finished time =', time.time() - now
 
 	#AFIdSet1 = set()
 	#for paper in json1:
@@ -881,7 +860,6 @@ def query(id1, id2):
 		#return query_Id_AuId(id1, id2, afId2)
 		return query_Id_AuId(id1, id2, paperJson1[0], json2)
 	else:
-		return query_Id_Id_small(id1, id2, paperJson1[0], paperJson2[0])
 		paperJson1 = paperJson1[0]
 		paperJson2 = paperJson2[0]
 		if 'CC' in paperJson2 and paperJson2['CC'] >= 50000:
