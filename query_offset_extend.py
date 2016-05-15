@@ -167,7 +167,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 		FIdList2.sort()		
 	if 'F' in json1 and 'F' in json2:
 		jointFIdList = join(FIdList1, FIdList2)
-		map(lambda x: ans.append([id1, x, id2]), jointFIdList)
+		ans.extend([[id1, x, id2] for x in jointFIdList])
 			
 
 	# Id-J.JId-Id
@@ -187,7 +187,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 		AuIdList2.sort()
 	if 'AA' in json1 and 'AA' in json2:
 		jointAuIdList = join(AuIdList1, AuIdList2)
-		map(lambda x: ans.append([id1, x, id2]), jointAuIdList)
+		ans.extend([[id1, x, id2] for x in jointAuIdList])
 			
 
 	# Id-Id-Id
@@ -201,7 +201,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 		RIdList.sort()
 		Id2citedList.sort()
 		jointRIdList = join(RIdList, Id2citedList)
-		map(lambda x: ans.append([id1, x, id2]), jointRIdList)
+		ans.extend([[id1, x, id2] for x in jointRIdList])
 			
 
 	# =========== 3-hop =========== 
@@ -244,7 +244,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 					FIdListTmp = map(lambda x:x['FId'], id1CitePaper['F'])
 					FIdListTmp.sort()
 					jointFIdList = join(FIdListTmp, FIdList2)
-					map(lambda x: ans.append([id1, id1CitePaper['Id'], x, id2]), jointFIdList)
+					ans.extend([[id1, id1CitePaper['Id'], x, id2] for x in jointFIdList])
 						
 
 		# Id-Id-J.JId-Id
@@ -266,7 +266,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 					AuIdListTmp = map(lambda x:x['AuId'], id1CitePaper['AA'])
 					AuIdListTmp.sort()
 					jointAuIdList = join(AuIdListTmp, AuIdList2)
-					map(lambda x: ans.append([id1, id1CitePaper['Id'], x, id2]), jointAuIdList)
+					ans.extend([[id1, id1CitePaper['Id'], x, id2] for x in jointAuIdList])
 						
 
 		# Id-Id-Id-Id
@@ -276,7 +276,7 @@ def query_Id_Id_small(id1, id2, json1, json2):
 				RIdListTmp = id1CitePaper['RId']
 				RIdListTmp.sort()
 				jointRIdList = join(RIdListTmp, Id2citedList)
-				map(lambda x: ans.append([id1, id1CitePaper['Id'], x, id2]), jointRIdList)
+				ans.extend([[id1, id1CitePaper['Id'], x, id2] for x in jointRIdList])
 					
 
 	return ans
@@ -315,7 +315,7 @@ def query_AuId_Id(auId1, id2, json1, json2):
 				FIdListTmp = map(lambda x:x['FId'], paper['F'])
 				FIdListTmp.sort()
 				jointFIdList = join(FIdListTmp, FIdList2)
-				map(lambda x: ans.append([auId1, paper['Id'], x, id2]), jointFIdList)
+				ans.extend([[auId1, paper['Id'], x, id2] for x in jointFIdList])
 					
 
 	# AuId-Id-C.CId-Id
@@ -341,7 +341,7 @@ def query_AuId_Id(auId1, id2, json1, json2):
 				AuIdListTmp = map(lambda x:x['AuId'], paper['AA'])
 				AuIdListTmp.sort()
 				jointAuIdList = join(AuIdListTmp, AuIdList2)
-				map(lambda x: ans.append([auId1, paper['Id'], x, id2]), jointAuIdList)
+				ans.extend([[auId1, paper['Id'], x, id2] for x in jointAuIdList])
 
 	# AuId-Id-Id-Id
 	if 'CC' in json2:
@@ -356,7 +356,7 @@ def query_AuId_Id(auId1, id2, json1, json2):
 				RIdListTmp = paper['RId']
 				RIdListTmp.sort()
 				jointRIdList = join(RIdListTmp, Id2citedList)
-				map(lambda x: ans.append([auId1, paper['Id'], x, id2]), jointRIdList)
+				ans.extend([[auId1, paper['Id'], x, id2] for x in jointRIdList])
 					
 
 	# AuId-AA.AFId-AA.AuId-Id
@@ -402,7 +402,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 		RIdList = json1['RId']
 		RIdList.sort()
 		jointRIdList = join(paperIdList, RIdList)
-		map(lambda x: ans.append([id1, x, auId2]), jointRIdList)
+		ans.extend([[id1, x, auId2] for x in jointRIdList])
 			
 
 	# =========== 3-hop ===========
@@ -416,7 +416,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 				FIdListTmp = map(lambda x:x['FId'], paper['F'])
 				FIdListTmp.sort()
 				jointFIdList = join(FIdListTmp, FIdList1)
-				map(lambda x: ans.append([id1, x, paper['Id'], auId2]), jointFIdList)
+				ans.extend([[id1, x, paper['Id'], auId2] for x in jointFIdList])
 
 	# Id-C.CId-Id-AuId
 	if 'C' in json1:
@@ -441,7 +441,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 				AuIdListTmp = map(lambda x:x['AuId'], paper['AA'])
 				AuIdListTmp.sort()
 				jointAuIdList = join(AuIdListTmp, AuIdList1)
-				map(lambda x: ans.append([id1, x, paper['Id'], auId2]), jointAuIdList)
+				ans.extend([[id1, x, paper['Id'], auId2] for x in jointAuIdList])
 					
 
 	# Id-Id-Id-AuId
@@ -455,7 +455,7 @@ def query_Id_AuId(id1, auId2, json1, json2):
 				RIdListTmp = citePaperInfo['RId']
 				RIdListTmp.sort()
 				jointRIdList = join(RIdListTmp, paperIdList)
-				map(lambda x: ans.append([id1, citePaperInfo['Id'], x, auId2]), jointRIdList)
+				ans.extend([[id1, citePaperInfo['Id'], x, auId2] for x in jointRIdList])
 
 	# Id-AA.AuId-AA.AfId-AuId
 	AFIdSet2 = set()
@@ -514,11 +514,11 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 		# jointAFIdList = np.intersect1d(AFIdList1, AFIdList2)
 		jointAFIdSet = AFIdSet1.intersection(AFIdSet2)
 		# for AFId in jointAFIdList:
-		map(lambda x: ans.append([auId1, x, auId2]), jointAFIdSet)
+		ans.extend([[auId1, x, auId2] for x in jointAFIdSet])
 	#AuId-Id-AuId
 	if len(IdList1)>0 and len(IdList2)>0:
 		jointIdList = join(IdList1, IdList2)
-		map(lambda x: ans.append([auId1, x, auId2]), jointIdList)
+		ans.extend([[auId1, x, auId2] for x in jointIdList])
 	# =========== 3-hop ===========
 
 	# AuId-Id-Id-AuId
@@ -527,7 +527,7 @@ def query_AuId_AuId(auId1, auId2, json1, json2):
 			RIdList = paper1['RId']
 			RIdList.sort()
 			jointList = join(RIdList, IdList2)
-			map(lambda x: ans.append([auId1, paper1['Id'], x, auId2]), jointList)
+			ans.extend([[auId1, paper1['Id'], x, auId2] for x in jointList])
 	return ans
 
 def query(id1, id2):
