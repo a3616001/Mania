@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import json
 import os
-from query_offset import *
+from query_offset_extend import *
 #import gc
 #import query_original
 import time
@@ -12,6 +12,7 @@ app = Flask(__name__)
 def call():
     id1 = request.args.get('id1')
     id2 = request.args.get('id2')
+    print 'New request, id1 = {}, id2 = {}'.format(id1, id2)
 #    print id1, id2
     # os.system('./program {} {}'.format(id1, id2))
 #    ans = []
@@ -35,4 +36,4 @@ def call():
 
 if __name__ == "__main__":
     #app.debug = True
-    app.run(host = '0.0.0.0', port=80)
+    app.run(host = '0.0.0.0', port=80, threaded=True)
