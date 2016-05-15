@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import json
 import os
-from query import *
+from query_offset import *
 #import gc
 #import query_original
 import time
