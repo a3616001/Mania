@@ -1,5 +1,7 @@
 # Mania
 
-Microsoft Beauty of Programming contest 2016, 3rd place
+Microsoft Beauty of Programming contest 2016 
 
-Please star it if this project inspire you :)
+semifinal, 3rd place
+
+Please consider star it if this project inspires you :)
